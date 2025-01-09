@@ -1,0 +1,273 @@
+; --------------------------------------------------------------------------------------------
+; Case definition of granular cliff collapse
+; --------------------------------------------------------------------------------------------
+
+; 31.05.2018, alexander.busch@alumni.ntnu.no
+
+; Reads predefined case files for respective spatial and particle scales and
+; - calculates quasi-steady-state solutions for settling of solid bed (wall on rhs of solid cliff)
+; The solid bed interface is resolved with adaptive mesh refinement based on the solid volume fraction gradient.
+
+; HOW TO
+;	1 - Paste "/file/read-journal run2init.jou" in TUI to run simulations for defined spatial and particle scale
+;	2 - Create hpc journal files via Matlab "modify_journal_file.m"
+
+
+
+; --------------------------------------------------------------------------------------------
+; Create case solution folder structure and read case file
+; --------------------------------------------------------------------------------------------
+
+!mkdir solution
+!mkdir "solution/reports"
+!mkdir "solution/exports"
+!mkdir "solution/monitors"
+!mkdir "solution/casefiles"
+!mkdir "solution/cfd-post"
+
+/file/read-case case_1_2patch.cas OK
+
+
+; --------------------------------------------------------------------------------------------
+; Parameters
+; --------------------------------------------------------------------------------------------
+
+(rpsetvar 'x_min1 -0.05)
+(rpsetvar 'x_min2 -0.04)
+(rpsetvar 'x_line -0.045)
+(rpsetvar 'y_max1 0.04)
+(rpsetvar 'y_max2 0.022222)
+
+(rpsetvar 'sand/d 0.0001)
+(rpsetvar 'sand/angle_intfric 55)
+(rpsetvar 'sand/alpha_fric 0.50)
+(rpsetvar 'sand/alpha_pack 0.635)
+(rpsetvar 'sand/alpha_ini 0.54)
+
+
+; --------------------------------------------------------------------------------------------
+; UDF
+; --------------------------------------------------------------------------------------------
+
+;/define/user-defined/compiled-functions compile "libudf" y "rheology.c" , ,
+;/define/user-defined/compiled-functions load "libudf"
+
+
+; --------------------------------------------------------------------------------------------
+; Change color scheme
+; --------------------------------------------------------------------------------------------
+
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Redefinition of fluid and solid phase
+; --------------------------------------------------------------------------------------------
+
+/define/phases/phase-domain fluid fluid y h2o
+/define/phases/phase-domain solid , n y n n n constant (%rpgetvar 'sand/d) gidaspow lun-et-al schaeffer constant (%rpgetvar 'sand/angle_intfric) johnson-et-al derived constant (%rpgetvar 'sand/alpha_fric) algebraic lun-et-al lun-et-al derived constant (%rpgetvar 'sand/alpha_pack)
+/define/phases/interaction-domain n n y gidaspow y constant 1 n y 0.9 0 n n n 
+
+
+; --------------------------------------------------------------------------------------------
+; Initialization
+; --------------------------------------------------------------------------------------------
+
+/solve/initialize/set-defaults/fluid x-velocity 0
+/solve/initialize/set-defaults/fluid y-velocity 0
+/solve/initialize/set-defaults/solid x-velocity 0
+/solve/initialize/set-defaults/solid y-velocity 0
+/solve/initialize/set-defaults/solid mp 0
+/solve/initialize/set-defaults/solid granular-temperature 0
+/solve/initialize/initialize-flow ,
+
+; Patch solids
+;/adapt/set/max-level-refine 4
+;/adapt/set/max-number-cells 100000
+/adapt/mark-inout-rectangle/ y n (%rpgetvar 'x_min1) (%rpgetvar 'x_min2) 0 (%rpgetvar 'y_max2)
+/solve/patch solid , , , mp (%rpgetvar 'sand/alpha_ini)
+/solve/patch solid , , , granular-temperature 1e-9
+
+
+; --------------------------------------------------------------------------------------------
+; Adaptive mesh refinement
+; --------------------------------------------------------------------------------------------
+
+/adapt/set/min-number-cells 100
+/adapt/set/max-number-cells 100000
+/adapt/set/min-cell-volume 1e-7
+/adapt/set/max-level-refine 3
+/adapt/set/coarsen-mesh? y
+/adapt/set/refine-mesh? y
+/adapt/adapt-to-gradients/solid/vof space-gradient 2 n 0.7 0.3 y 5
+
+
+; --------------------------------------------------------------------------------------------
+; Monitors
+; --------------------------------------------------------------------------------------------
+
+/display/set-window 2
+/solve/monitors/volume/set-monitor solid-velocity "Volume-Average" solid velocity-magnitude mixture () y 2 n y "solution/monitors/sol-vel.txt" 1 y flow-time
+/solve/monitors/volume/set-monitor solid-frict-visc "Volume-Average" solid frictional-viscosity mixture () y 2 n y "solution/monitors/sol-fric-visc.txt" 1 y flow-time
+/solve/monitors/volume/set-monitor solid-gran-pres "Volume-Average" solid granular-pressure mixture () y 2 n y "solution/monitors/sol-gran-pres.txt" 1 y flow-time
+
+; Set log scale via recorded journal file because apparently no TUI command for monitor plots
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-activate-item "Volume Monitor*Table1*Table1*Table2(Options)*Table3*Table3*ButtonBox2*PushButton2(Axes)")
+(cx-gui-do cx-set-toggle-button2 "Axes - volume Monitor Plot*Table1*Frame1*ToggleBox1(Axis)*Y" #t)
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*Table1*Frame1*ToggleBox1(Axis)*Y")
+(cx-gui-do cx-set-toggle-button2 "Axes - volume Monitor Plot*Table1*ToggleBox2(Options)*CheckButton1(Log)" #t)
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*Table1*ToggleBox2(Options)*CheckButton1(Log)")
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*PanelButtons*PushButton2(Cancel)")
+(cx-gui-do cx-activate-item "Volume Monitor*PanelButtons*PushButton1(OK)")
+
+/display/set-window 3
+/solve/monitors/volume/set-monitor solid-vol-frac "Max" solid vof mixture () y 3 n y "solution/monitors/sol-vol-frac.txt" 1 y flow-time
+
+
+; --------------------------------------------------------------------------------------------
+; Autosave
+; --------------------------------------------------------------------------------------------
+
+/file/auto-save/data-frequency 10000
+/file/auto-save/append-file-name-with time-step 6
+/file/auto-save/root-name "solution/casefiles/case"
+
+
+; --------------------------------------------------------------------------------------------
+; CFD post data export
+; --------------------------------------------------------------------------------------------
+
+/file/transient-export/delete cfd-post
+/file/export/cfd-post-compatible solution/cfd-post/case-0.000000 , , solid-vof solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-frictional-viscosity q y ,
+/file/transient-export/cfd-post-compatible solution/cfd-post/case , , solid-vof solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-frictional-viscosity q , n cfd-post 100 flow-time 6
+; Other quantities to write to cfd-post files:
+; fluid-velocity-magnitude solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-granular-pressure solid-frictional-viscosity solid-granular-temperature solid-dynamic-pressure solid-viscosity-lam solid-total-pressure
+
+
+; --------------------------------------------------------------------------------------------
+; Execute Commands (Display results during computations)
+; --------------------------------------------------------------------------------------------
+
+/solve/execute-commands/add-edit command-1 1 "time-step" "/display/set-window 4"
+/solve/execute-commands/add-edit command-2 1 "time-step" "/display/contour solid vof , ,"
+/solve/execute-commands/add-edit command-3 1 "time-step" "/display/set/contours/filled-contours n"
+/solve/execute-commands/add-edit command-4 1 "time-step" "/display/re-render"
+/solve/execute-commands/add-edit command-5 1 "time-step" "/display/set/overlays y"
+/solve/execute-commands/add-edit command-6 1 "time-step" "/display/vector solid velocity solid velocity-magnitude , , , ,"
+
+/display/set-window 4
+/display/contour solid vof , ,
+/display/set/contours/filled-contours n
+/display/re-render
+/display/set/overlays y
+/display/vector solid velocity solid velocity-magnitude , , , ,
+
+
+; --------------------------------------------------------------------------------------------
+; Solve 
+; --------------------------------------------------------------------------------------------
+
+;/define/user-defined/compiled-functions unload "libudf"
+/file/write-case-data "solution/casefiles/case_2patch-0.cas" OK
+
+/solve/set/time-step 1e-3
+/solve/dual-time-iterate 2000 40
+
+
+; -------------------------------------------------------------------------------------------------
+; Plot profiles in Fluent and export to file
+; -------------------------------------------------------------------------------------------------
+
+;/surface/delete-surface vx_line=0
+/surface/line-surface vx_line=0 (%rpgetvar 'x_line) 0 (%rpgetvar 'x_line) (%rpgetvar 'y_max1)
+
+/plot/plot-direction 0 1
+/plot/solution-set/markers 0 "(*)" 0.3 "foreground" n
+;/plot/solution-set/lines 0 "----" 1 "foreground" n
+
+/display/close-window 5
+/display/set-window 5
+/plot/solution-set/log? n n
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) y
+/plot/solution solid vof n () vx_line=0 ()
+/plot/plot n "solution/exports/vof.txt" n n n solid vof y 0 1 vx_line=0 ()
+
+/display/close-window 6
+/display/set-window 6
+/plot/solution-set/log? n n
+/plot/solution-set/auto-scale? y y
+/plot/solution solid y-velocity n () vx_line=0 ()
+/plot/plot n "solution/exports/y-vel.txt" n n n solid y-velocity y 0 1 vx_line=0 ()
+
+/display/close-window 7
+/display/set-window 7
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) n -4 2
+;/plot/solution-set/lines 0 "----" 1 "foreground" n
+/plot/solution solid strain-rate-mag n () vx_line=0 ()
+/plot/plot n "solution/exports/strain-rate.txt" n n n solid strain-rate-mag y 0 1 vx_line=0 ()
+
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) n -4 2
+/plot/solution-set/markers 0 "(*)" 0.3 "blue" n
+;/plot/solution-set/lines 0 "----" 1 "blue" n
+/plot/solution solid dx-velocity-dx n () vx_line=0 ()
+/plot/plot n "solution/exports/dx-velocity-dx.txt" n n n solid dx-velocity-dx y 0 1 vx_line=0 ()
+
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) n -4 2
+/plot/solution-set/markers 0 "(*)" 0.3 "green" n
+;/plot/solution-set/lines 0 "----" 1 "green" n
+/plot/solution solid dx-velocity-dy n () vx_line=0 ()
+/plot/plot n "solution/exports/dx-velocity-dy.txt" n n n solid dx-velocity-dy y 0 1 vx_line=0 ()
+
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) n -4 2
+/plot/solution-set/markers 0 "(*)" 0.3 "red" n
+;/plot/solution-set/lines 0 "----" 1 "red" n
+/plot/solution solid dy-velocity-dx n () vx_line=0 ()
+/plot/plot n "solution/exports/dy-velocity-dx.txt" n n n solid dy-velocity-dx y 0 1 vx_line=0 ()
+
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) n -4 2
+/plot/solution-set/markers 0 "(*)" 0.3 "yellow" n
+;/plot/solution-set/lines 0 "----" 1 "yellow" n
+/plot/solution solid dy-velocity-dy n () vx_line=0 ()
+/plot/plot n "solution/exports/dy-velocity-dy.txt" n n n solid dy-velocity-dy y 0 1 vx_line=0 ()
+
+/display/close-window 8
+/display/set-window 8
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) y
+/plot/solution-set/markers 0 "(*)" 0.3 "foreground" n
+;/plot/solution-set/lines 0 "----" 1 "foreground" n
+/plot/solution solid granular-pressure n () vx_line=0 ()
+/plot/plot n "solution/exports/granular-pressure.txt" n n n solid granular-pressure  y 0 1 vx_line=0 ()
+
+/display/close-window 9
+/display/set-window 9
+/plot/solution-set/log? n y
+/plot/solution-set/auto-scale? n 0 (%rpgetvar 'y_max1) y
+/plot/solution-set/markers 0 "(*)" 0.3 "foreground" n
+;/plot/solution-set/lines 0 "----" 1 "foreground" n
+/plot/solution solid frictional-viscosity n () vx_line=0 ()
+/plot/plot n "solution/exports/frictional-viscosity.txt" n n n solid frictional-viscosity y 0 1 vx_line=0 ()
+
+
+; --------------------------------------------------------------------------------------------
+; Write to file
+; --------------------------------------------------------------------------------------------
+
+/file/interpolate/write-data "solution/patch_1.ip" OK y y
+/file/write-case-data "solution/casefiles/case-solved.cas" OK
+/report/summary y "solution/reports/casesetup.txt"
+
+

@@ -1,0 +1,60 @@
+;set up image output
+/display/set/contours/filled-contours yes
+/display/set/picture/driver png
+/display/set/picture/landscape yes
+/display/set/picture/x-resolution 960
+/display/set/picture/y-resolution 720
+/display/set/picture/color-mode color
+/views/restore-view front
+
+;print xy view of solid volume fraction and velocity at t=0
+/views/restore-view front
+/display/set/contour/surface xy-plane()
+/display/contour solid vof 0 1
+/display/save-picture xy_solid_vof%t.png
+/display/contour liquid velocity 0 1
+/display/save-picture xy_liquid_vel%t.png
+/display/contour solid velocity 0 1
+/display/save-picture xy_solid_vel%t.png
+
+;print yz view of solid volume fraction and velocity at t=0
+/views/restore-view right
+/display/set/contour/surface center()
+/display/contour solid vof 0 1
+/display/save-picture yz_solid_vof%t.png
+/display/contour liquid velocity 0 1
+/display/save-picture yz_liquid_vel%t.png
+/display/contour solid velocity 0 1
+/display/save-picture yz_solid_vel%t.png
+
+;print iso view of solid volume fraction and velocity at t=0
+; /views/restore-view isometric
+; /views/camera/up-vector 0 1 0
+; /views/camera/position 0.6 0.1 0.5
+; /display/set/contour/surface center(1)
+; /display/set/contour/surface xy-plane(2)
+; /display/set/contour/surface periodic(3)
+; /display/contour solid vof 0 1
+; /display/save-picture iso_solid_vof%t.png
+; /display/contour liquid velocity 0 1
+; /display/save-picture iso_liquid_vel%t.png
+; /display/contour solid velocity 0 1
+; /display/save-picture iso_solid_vel%t.png
+
+;set up display commands to print yz view of phases and velocity magnitude every 10 time steps
+/solve/execute-commands/add-edit command-1 10 "time-step" "/display/contour solid vof 0 1"
+/solve/execute-commands/add-edit command-2 10 "time-step" "/display/save-picture yz_solid_vof%t.png"
+/solve/execute-commands/add-edit command-3 10 "time-step" "/display/contour liquid velocity 0 1"
+/solve/execute-commands/add-edit command-4 10 "time-step" "/display/save-picture yz_liquid_vel%t.png"
+/solve/execute-commands/add-edit command-5 10 "time-step" "/display/contour solid velocity 0 1"
+/solve/execute-commands/add-edit command-6 10 "time-step" "/display/save-picture yz_solid_vel%t.png"
+
+;set up display commands to print xy view of phases and velocity magnitude every 10 time steps
+/solve/execute-commands/add-edit command-7 10 "time-step" "/views/restore-view front"
+/solve/execute-commands/add-edit command-8 10 "time-step" "/display/set/contour/surface xy-plane()"
+/solve/execute-commands/add-edit command-9 10 "time-step" "/display/contour solid vof 0 1"
+/solve/execute-commands/add-edit command-10 10 "time-step" "/display/save-picture xy_solid_vof%t.png"
+/solve/execute-commands/add-edit command-11 10 "time-step" "/display/contour liquid velocity 0 1"
+/solve/execute-commands/add-edit command-12 10 "time-step" "/display/save-picture xy_liquid_vel%t.png"
+/solve/execute-commands/add-edit command-13 10 "time-step" "/display/contour solid velocity 0 1"
+/solve/execute-commands/add-edit command-14 10 "time-step" "/display/save-picture xy_solid_vel%t.png"

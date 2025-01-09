@@ -1,0 +1,311 @@
+\documentclass{ntnuthesis}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage[sf]{titlesec}				% Title options	
+\usepackage{calc}						% \setcounter{ctr}{num} tools
+\usepackage{pdfpages}					% \includepdf tools	
+%\usepackage{cleveref}					% \cref{} tools
+\usepackage{booktabs}					% Table options
+\usepackage{afterpage}					% Upgrade on \clearpage
+%\usepackage{showframe}
+%\usepackage[nottoc,notlot,notlof]{tocbibind}
+	
+\usepackage[slantedGreek,sc]{mathpazo}	% Font options
+\usepackage{avant}						% Font options
+\usepackage{microtype}					% Font options
+\usepackage[greek,english]{babel}		% Typographical rules (?)
+
+\usepackage{pagecolor,xcolor}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage[caption=false]{subfig}
+\usepackage{adjustbox}
+
+
+
+\usepackage[avantgarde]{quotchap}
+
+%% BIBLIOGRAPHY OPTIONS ============================================
+
+\usepackage[  
+backend     = bibtex, % biber or bibtex
+doi         = false,
+url         = true,
+isbn        = false,
+labeldate   = true,
+eprint      = true,
+maxbibnames = 99,
+natbib      = true,
+sorting     = nyt,
+style       = numeric,
+defernumbers= true
+]{biblatex}
+
+
+
+
+
+
+
+
+
+
+
+
+%\renewbibmacro{in:}{\ifentrytype{article}{}{\printtext{\bibstring{in}\intitlepunct}}}
+
+%\AtEveryBibitem{
+%  \clearfield{abstract}
+%}
+
+%
+%\addbibresource{references}
+%\addbibresource{referencesBooks}
+%\addbibresource{referencesSoftwares}
+\addbibresource{D:/OneDrive_NTNU/SWwd/LaTEX/ADWELL}
+
+%% PACKAGES TURNED OFF =============================================
+
+%\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage{verbatim}		% commenting environment
+
+\usepackage{url}
+\usepackage{todonotes}
+
+
+% This after {cleverref} produces hyperlinks on \ref{} and \eqref{}
+%\usepackage[pdfborder={0 0 0},hyperfigures]{hyperref}
+
+%\floatsetup{ 
+%  heightadjust=object,
+%  valign=t
+%}
+
+
+
+
+
+
+
+
+
+
+%% ALEX =============================================
+
+
+\usepackage{etoolbox}
+
+% Nomenclature
+\usepackage[intoc]{nomencl}
+\makenomenclature
+% Documentation: http://texdoc.net/texmf-dist/doc/latex/nomencl/nomencl.pdf
+
+
+\usepackage{fancyhdr}
+
+\usepackage{biblatex}
+
+
+\usepackage[ %
+pdfproducer={Texmaker},     % 
+pdfcreator={pdfLaTeX},      % 
+hidelinks,                  % versteckt die Boxen um die Links in der PDF
+bookmarksnumbered,          % nummereiert Lesezeichen
+]{hyperref}     
+
+
+
+
+\usepackage{cleveref}					% \cref{} tools
+
+
+
+% NEW MATH COMMANDS ================================================
+\setlength\emergencystretch{\hsize}
+\newcommand{\diff}{\mathrm{d}}
+
+\def\SL{S_{\mathrm{L}}}
+\def\SR{S_{\mathrm{R}}}
+\def\SC{S_{\mathrm{C}}}
+\def\CL{c_{\textup{L}}}
+\def\CR{c_{\textup{R}}}
+
+\def\SLj{S_{\mathrm{L},j+1/2}}
+\def\SRj{S_{\mathrm{R},j+1/2}}
+
+\def\ASj{A_{\mathrm{S},j+1/2}}
+\def\QSj{Q_{\mathrm{S},j+1/2}}
+
+\def\ul{u_{\textup{L}}}
+\def\ur{u_{\textup{R}}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\newcommand{\betag}{\greektext b\latintext}
+\allowdisplaybreaks
+
+%% TITLEPAGE ENVIRONMENT FOR THE PAPERS ============================
+
+\newenvironment{journalpaper}[1]
+	{\begin{titlepage}
+		\newpagecolor{cyan!15}
+		\centering
+		{\sffamily\large\bfseries Journal paper #1} \\ [1cm]
+		\rule{\linewidth}{0.5mm}
+		}{
+		\rule{\linewidth}{0.5mm}
+	\end{titlepage}
+%	\cleardoublepage
+	\restorepagecolor
+	\newpagecolor{white}
+	}
+
+\newenvironment{conferencepaper}[1]
+	{\begin{titlepage}
+	\newpagecolor{cyan!15}
+	\centering
+	{\sffamily\large\bfseries Conference paper #1} \\ [1cm]
+	\rule{\linewidth}{0.5mm}
+    }{
+    \rule{\linewidth}{0.5mm}
+  \end{titlepage}
+%  \cleardoublepage
+  \restorepagecolor
+  \newpagecolor{white}
+}
+
+%% TITLE AND .PDF FILE INFORMATION =================================
+
+%% Set PDF file information
+%\hypersetup{
+%pdfinfo={
+%	Title={Large Time Step Methods for Hyperbolic Conservation Laws},
+%	Author={Marin Prebeg},
+%	Subject={PhD thesis},
+%}}
+
+\title{Turbulence structure and particle transport\\in particle loaded non-Newtonian Fluids}
+\author{Alexander Busch}
+\degreetype{Philosophiae doctor}
+\faculty{Faculty of Engineering}
+\department{Department of Energy and Process Engineering}
+\isbnprinted{978-82-326-2638-0}
+\isbnelectronic{978-82-326-2639-7}
+\serialnumber{2019:285}
+
+\begin{document}
+%\fuzzy
+%\sloppy
+
+\pagestyle{empty}
+% Includes page number at the bottom of the page.
+\maketitle
+
+% Marin
+%\pagestyle{plain}
+% Includes page number at the bottom of the page.
+\pagenumbering{roman} 				
+% Uses small roman numbers for page numbering.
+\setcounter{page}{3}
+% Resets the page counter to 1.
+
+
+% Headers and Footers (https://tex.stackexchange.com/questions/151784/how-to-display-current-section-title-in-header)
+\pagestyle{fancy}
+\fancyhf{}
+%\fancyhead[LE]{\nouppercase\leftmark}
+\fancyhead[LE]{\bfseries\nouppercase{\ifnum\value{chapter}>0 \thechapter\ \fi\leftmark}}
+\fancyhead[RO]{\nouppercase\rightmark}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\setlength{\headheight}{14.5pt} % very important!
+\fancyfoot[LE,RO]{\thepage}
+%\fancyfootoffset[le,ro]{30pt}
+
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+\input{Content/01_Abstract}
+\clearpage
+\shipout\null
+
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+\input{Content/02_Preface}
+\clearpage
+\shipout\null
+
+\chapter*{Acknowledgments}
+\addcontentsline{toc}{chapter}{Acknowledgments}
+\input{Content/03_Acknowledgments}
+\clearpage
+\shipout\null
+
+%\chapter*{Nomenclature}
+%\addcontentsline{toc}{chapter}{Nomenclature}
+\printnomenclature
+\clearpage
+\shipout\null
+% Execute "makeindex thesis.nlo -s nomencl.ist -o thesis.nls" in thesis path to generate .nls file and recompile
+% Documentation: http://texdoc.net/texmf-dist/doc/latex/nomencl/nomencl.pdf
+
+
+\tableofcontents				
+\addcontentsline{toc}{chapter}{Contents}
+\clearpage
+
+
+% Uses small roman numbers for page numbering.
+\pagenumbering{arabic} 				
+% Resets the page counter to 1.
+\setcounter{page}{1}
+
+\chapter{Introduction}
+\input{Content/10_Introduction}
+\clearpage
+
+%\input{Content/02_Background}
+\clearpage
+
+%\input{Content/03a_LTS-HLL}
+%\input{Content/03b_EntropyStability}
+%\input{Content/03c_PositivityPreservation}
+\clearpage
+
+%\chapter{Conclusions and outlook}
+%\input{Content/04_MultiphaseFlows}
+\clearpage
+
+\chapter{Conclusions and Outlook}
+\input{Content/90_Conclusions}
+\clearpage
+
+%% BIBLIOGRAPHY
+
+%\chapter*{Bibliography}
+%\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[notkeyword=Main,notkeyword=Additional,heading=bibintoc]
+\clearpage
+
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+
+\appendix
+\input{Content/XX_Appendix}
+
+\chapter*{Curriculum vitae}
+\addcontentsline{toc}{chapter}{Curriculum vitae}
+%\includepdf[pages=-,pagecommand={\thispagestyle{empty}}]{Papers/CFD2015.pdf}
+\clearpage
+\shipout\null
+
+\end{document}

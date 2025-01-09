@@ -1,0 +1,237 @@
+/file/read-case-data patch_solved.cas OK
+/solve/dual-time-iterate 2 50
+
+; --------------------------------------------------------------------------------------------
+; Change color scheme
+; --------------------------------------------------------------------------------------------
+
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Display mesh
+; --------------------------------------------------------------------------------------------
+
+/display/set/colors/interior-faces "light gray"
+/display/set/colors/wall "light gray"
+/display/surface-mesh 2 0 1 ()
+
+
+; --------------------------------------------------------------------------------------------
+; Define image output
+; --------------------------------------------------------------------------------------------
+
+/views/restore-view front
+/display/set/picture/driver eps
+/display/set/picture/driver/post-format vector
+/display/set/picture/landscape yes
+/display/set/picture/dpi 600
+;/display/set/picture/x-resolution 1500
+;/display/set/picture/y-resolution 800
+
+/display/set/contours/auto-range? n
+/display/set/contours/filled-contours n
+/display/set/contours/surfaces () 
+/display/set/contours/render-mesh? y
+/display/set/velocity-vectors/surfaces ()
+
+views/camera/position -0.45 0.3 ,
+views/camera/target -0.45 0.3 ,
+views/camera/zoom-camera 6
+views/save-view xy OK
+
+
+/display/set/windows/aspect-ratio 12 6
+
+; --------------------------------------------------------------------------------------------
+; Solid volume fraction and solid velocities
+; --------------------------------------------------------------------------------------------
+/display/close-window 1
+/display/set-window 1
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid vof 0 ,
+/views/restore-view xy
+/display/save-picture solid-volume-fraction.eps OK
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-volume-fraction_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-volume-fraction_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; Solid (granular) pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+/display/close-window 2
+/display/set-window 2
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid granular-pressure 0 ,
+/views/restore-view xy
+/display/save-picture solid-pressure.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-pressure_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-pressure_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; y-component of gradient of solid pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+
+/display/close-window 3
+/display/set-window 3
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid gp-g-mpg-y  0 ,
+/views/restore-view xy
+/display/save-picture solid-pressure-grad.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-pressure-grad_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-pressure-grad_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; Granular temperature and solid velocities
+; --------------------------------------------------------------------------------------------
+/display/close-window 8
+/display/set-window 8
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid granular-temperature 0 ,
+/views/restore-view xy
+/display/save-picture granular-temperature.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture granular-temperature_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture granular-temperature_solid-velocities.png OK
+
+; --------------------------------------------------------------------------------------------
+; Solid strain-rate and solid velocities
+; --------------------------------------------------------------------------------------------
+/display/close-window 9
+/display/set-window 9
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid strain-rate 0 ,
+/views/restore-view xy
+/display/save-picture solid-strain-rate.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-strain-rate_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-strain-rate_solid-velocities.png OK
+
+; --------------------------------------------------------------------------------------------
+; Solid dv/dy rate and solid velocities
+; --------------------------------------------------------------------------------------------
+/display/close-window 10
+/display/set-window 10
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid dy-velocity-dy  0 ,
+/views/restore-view xy
+/display/save-picture solid-dv-dy.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-dv-dy_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-dv-dy_solid-velocities.png OK
+
+; --------------------------------------------------------------------------------------------
+; Solid collisional/kinetic pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+; Solid collisional/kinetic pressure only, i.e. no frictional pressure
+/define/phases/phase-domain solid , n y n n n constant , gidaspow lun-et-al schaeffer constant , none derived constant , algebraic lun-et-al lun-et-al derived constant ,
+/solve/dual-time-iterate 1 50
+
+/display/close-window 4
+/display/set-window 4
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid granular-pressure 0 ,
+/views/restore-view xy
+/display/save-picture solid-col-kin-pressure.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-col-kin-pressure_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-col-kin-pressure_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; y-component of gradient of solid collisional/kinetic pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+
+/display/close-window 5
+/display/set-window 5
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid gp-g-mpg-y  0 ,
+/views/restore-view xy
+/display/save-picture solid-col-kin-pressure-grad.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-col-kin-pressure-grad_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-col-kin-pressure-grad_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; Solid frictional pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+; Frictional pressure only, i.e. no ktgf pressure
+/define/phases/phase-domain solid , n y n n n constant , gidaspow lun-et-al schaeffer constant , johnson-et-al derived constant , algebraic none lun-et-al derived constant ,
+/solve/dual-time-iterate 1 50
+
+/display/close-window 6
+/display/set-window 6
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid granular-pressure 0 ,
+/views/restore-view xy
+/display/save-picture solid-fric-pressure.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-fric-pressure_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-fric-pressure_solid-velocities.png OK
+
+
+; --------------------------------------------------------------------------------------------
+; y-component of gradient of solid frictional pressure and solid velocities
+; --------------------------------------------------------------------------------------------
+
+/display/close-window 7
+/display/set-window 7
+/display/set/picture/driver eps
+/display/set/rendering-options/color-map-alignment top
+/display/contour solid gp-g-mpg-y  0 ,
+/views/restore-view xy
+/display/save-picture solid-fric-pressure-grad.eps OK,
+/display/set/overlays y
+/display/set/rendering-options/color-map-alignment bottom
+/display/vector solid velocity solid velocity-magnitude , , 1 0
+/display/save-picture solid-fric-pressure-grad_solid-velocities.eps OK
+/display/set/picture/driver png
+/display/save-picture solid-fric-pressure-grad_solid-velocities.png OK
+
+; Full
+;/define/phases/phase-domain solid , n y n n n constant , gidaspow lun-et-al schaeffer constant , johnson-et-al derived constant , algebraic lun-et-al lun-et-al derived constant ,

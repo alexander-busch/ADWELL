@@ -1,0 +1,37 @@
+	
+
+
+;Users want to be able to repeat sections of Fluent journal files in loops
+; http://www.eureka.im/797.html
+
+; Users have expressed their desire to be able to automate runs by using journal files in which
+; entire sections of many commands are repeating, in "loops".
+; The simple Scheme function below allows the user to repeat a certain group of
+; TUI Fluent journal commands groupped in a string for a specified number of times.
+  
+ 
+ 
+;;;
+;; This is a Scheme functionality which
+;; allow the user to repeat a text command
+;; group of text user interface commands
+;; for a specified number of times
+;;
+;; Usage
+;; 1) Load the Scheme into Fluent session through
+;; File>Read>Scheme or through (load "loop1.scm")
+;; 2) Example of using the functionality:
+;; (loop-command "/di/cont/press ,, /di/hc "im%n.tiff" /so/dti 5 20" 111)
+;; This will repeat for 111 times the Fluent journal sequence
+;; /di/cont/press ,,
+;; /di/hc "im%n.tiff"
+;; /so/dti 5 20
+
+
+(define loop-command
+(lambda (this-command-string so-many-times)
+(let loop ((i 0))
+(if (< i so-many-times)
+(begin
+(ti-menu-load-string this-command-string)
+(loop (+ i 1)))))))

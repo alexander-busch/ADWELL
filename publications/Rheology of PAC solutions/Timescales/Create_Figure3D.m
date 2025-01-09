@@ -1,0 +1,29 @@
+function [ ] = Create_Figure3D( fig_name, fig_color, fig_units, fig_position, fig_xlabel, fig_ylabel, fig_zlabel, fig_xlim, fig_ylim, fig_zlim, fig_scale)
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+
+fig = figure('Name',fig_name,...
+    'color',fig_color,...
+    'Units',fig_units,...
+    'Position',fig_position);
+
+hold on;
+grid on;
+box on;
+
+set(gca,...
+    'XScale',fig_scale,...
+    'YScale',fig_scale,...
+    'ZScale',fig_scale,...
+    'xlim', fig_xlim ,...
+    'ylim', fig_ylim ,...
+    'zlim', fig_zlim);
+
+xlabel(fig_xlabel);
+ylabel(fig_ylabel);
+zlabel(fig_zlabel);
+
+view([1,1,1]);
+
+end
+

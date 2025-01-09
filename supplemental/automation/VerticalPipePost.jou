@@ -1,0 +1,18 @@
+/views/restore-view front
+/views/camera/target 0 0.12 0
+/views/camera/zoom-camera 1.8
+/display/set/windows/axes/visible n
+/display/set/windows/scale/font-size 0.02
+;/display/set/windows/main/right 1.2
+/display/set/windows/scale/right -0.6
+
+/display/set/contours/surfaces xsec_yx 0 ,
+
+/display/contour solid vof 0 0.63
+/display/save-picture M:\Desktop\results\vp_pac2037_s200_xy_solid_vof.png
+
+/display/contour fluid velocity 0 0.5
+/display/save-picture M:\Desktop\results\vp_pac2037_s200_xy_fluid_vel.png
+
+/display/contour solid velocity 0 0.5
+/display/save-picture M:\Desktop\results\vp_pac2037_s200_xy_solid_vel.png

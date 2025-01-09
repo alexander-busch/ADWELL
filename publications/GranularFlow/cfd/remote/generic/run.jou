@@ -1,0 +1,207 @@
+; --------------------------------------------------------------------------------------------
+; Case definition of granular cliff collapse
+; --------------------------------------------------------------------------------------------
+
+; 31.05.2018, alexander.busch@alumni.ntnu.no
+
+; Reads predefined case files for respective spatial and particle scales and
+; - calculates quasi-steady-state solutions for settling of solid bed (wall on rhs of solid cliff)
+; - patches the quasi-steady-state solution of settling solid bed (wall on rhs of solid cliff) as initial condition in cliff collapse domain
+; - calculates quasi-steady-state solution for cliff collapse
+; The solid bed interface is resolved with adaptive mesh refinement based on the solid volume fraction gradient.
+
+; HOW TO
+;	1 - Paste "/file/read-journal run.jou" in TUI to run simulations for defined spatial and particle scale
+;	2 - Create hpc journal files via Matlab "modify_journal_file.m"
+
+
+
+; --------------------------------------------------------------------------------------------
+; Create case solution folder structure and read case file
+; --------------------------------------------------------------------------------------------
+
+!mkdir solution
+!mkdir "solution/reports"
+!mkdir "solution/exports"
+!mkdir "solution/monitors"
+!mkdir "solution/casefiles"
+!mkdir "solution/cfd-post"
+
+/file/read-case case_1.cas OK
+
+
+; --------------------------------------------------------------------------------------------
+; Parameters
+; --------------------------------------------------------------------------------------------
+
+(if (not (rp-var-object 'x_min1))	(rp-var-define 'x_min1 0 'real #f))
+(if (not (rp-var-object 'x_min2))	(rp-var-define 'x_min2 0 'real #f))
+(if (not (rp-var-object 'x_line))	(rp-var-define 'x_line 0 'real #f))
+(if (not (rp-var-object 'x_max))	(rp-var-define 'x_max 0 'real #f))
+(if (not (rp-var-object 'y_max1))	(rp-var-define 'y_max1 0 'real #f))
+(if (not (rp-var-object 'y_max2))	(rp-var-define 'y_max2 0 'real #f))
+
+(rpsetvar 'x_min1 -0.05)
+(rpsetvar 'x_min2 -0.04)
+(rpsetvar 'x_line -0.045)
+(rpsetvar 'x_max 0.05)
+(rpsetvar 'y_max1 0.04)
+(rpsetvar 'y_max2 0.03)
+
+(rpsetvar 'sand/d 0.0001)
+(rpsetvar 'sand/angle_intfric 55)
+(rpsetvar 'sand/alpha_fric 0.50)
+(rpsetvar 'sand/alpha_pack 0.635)
+(rpsetvar 'sand/alpha_ini 0.54)
+
+
+; --------------------------------------------------------------------------------------------
+; UDF
+; --------------------------------------------------------------------------------------------
+
+/define/user-defined/compiled-functions compile "libudf" y "rheology.c" , ,
+/define/user-defined/compiled-functions load "libudf"
+
+
+; --------------------------------------------------------------------------------------------
+; Change color scheme
+; --------------------------------------------------------------------------------------------
+
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Redefinition of fluid and solid phase
+; --------------------------------------------------------------------------------------------
+
+/define/phases/phase-domain fluid fluid y h2o
+/define/phases/phase-domain solid , n y n n n constant (%rpgetvar 'sand/d) gidaspow lun-et-al schaeffer constant (%rpgetvar 'sand/angle_intfric) johnson-et-al derived constant (%rpgetvar 'sand/alpha_fric) algebraic lun-et-al lun-et-al derived constant (%rpgetvar 'sand/alpha_pack)
+/define/phases/interaction-domain n n y gidaspow y constant 1 n y 0.9 0 n n n 
+
+
+; --------------------------------------------------------------------------------------------
+; Initialization (Read interpolated steady-state data and patch zeros in rest of domain)
+; --------------------------------------------------------------------------------------------
+
+/file/interpolate/read-data "solution_2p/patch_1.ip"
+
+; Patch zeros to RHS of cliff to set width of cliff
+/adapt/mark-inout-rectangle/ y n (%rpgetvar 'x_min2) (%rpgetvar 'x_max) 0 (%rpgetvar 'y_max1)
+/solve/patch solid , , , mp 0.0
+/solve/patch solid , , , x-velocity , 0.0
+/solve/patch solid , , , y-velocity , 0.0
+/solve/patch solid , , , granular-temperature 0.0
+
+; Patch zeros to top of cliff to reduce aspect ratio
+/adapt/mark-inout-rectangle/ y n (%rpgetvar 'x_min1) (%rpgetvar 'x_min2) (%rpgetvar 'y_max2) (%rpgetvar 'y_max1)
+/solve/patch solid , 1 () mp 0
+/solve/patch solid , 1 () x-velocity , 0.0
+/solve/patch solid , 1 () y-velocity , 0.0
+/solve/patch solid , 1 () granular-temperature 0.0
+
+; Export initial cliff
+/file/export/ascii "solution/exports/vof_init_nv.txt" interior-mixture () , solid-vof () n
+/file/export/ascii "solution/exports/vof_init_cc.txt" interior-mixture () , solid-vof () n
+
+
+; --------------------------------------------------------------------------------------------
+; Adaptive mesh refinement
+; --------------------------------------------------------------------------------------------
+
+/adapt/set/min-number-cells 100
+/adapt/set/max-number-cells 100000
+/adapt/set/min-cell-volume 1e-7
+/adapt/set/max-level-refine 3
+/adapt/set/coarsen-mesh? y
+/adapt/set/refine-mesh? y
+/adapt/adapt-to-gradients/solid/vof space-gradient 2 n 0.7 0.3 y 5
+
+
+; --------------------------------------------------------------------------------------------
+; Monitors
+; --------------------------------------------------------------------------------------------
+
+/display/set-window 2
+/solve/monitors/volume/set-monitor solid-velocity "Volume-Average" solid velocity-magnitude mixture () y 2 n y "solution/monitors/sol-vel.txt" 1 y flow-time
+/solve/monitors/volume/set-monitor solid-frict-visc "Volume-Average" solid frictional-viscosity mixture () y 2 n y "solution/monitors/sol-fric-visc.txt" 1 y flow-time
+/solve/monitors/volume/set-monitor solid-gran-pres "Volume-Average" solid granular-pressure mixture () y 2 n y "solution/monitors/sol-gran-pres.txt" 1 y flow-time
+
+; Set log scale via recorded journal file because apparently no TUI command for monitor plots
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Solution|Monitors|Volume|solid-gran-pres"))
+(cx-gui-do cx-activate-item "Volume Monitor*Table1*Table1*Table2(Options)*Table3*Table3*ButtonBox2*PushButton2(Axes)")
+(cx-gui-do cx-set-toggle-button2 "Axes - volume Monitor Plot*Table1*Frame1*ToggleBox1(Axis)*Y" #t)
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*Table1*Frame1*ToggleBox1(Axis)*Y")
+(cx-gui-do cx-set-toggle-button2 "Axes - volume Monitor Plot*Table1*ToggleBox2(Options)*CheckButton1(Log)" #t)
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*Table1*ToggleBox2(Options)*CheckButton1(Log)")
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-activate-item "Axes - volume Monitor Plot*PanelButtons*PushButton2(Cancel)")
+(cx-gui-do cx-activate-item "Volume Monitor*PanelButtons*PushButton1(OK)")
+
+/display/set-window 3
+/solve/monitors/volume/set-monitor solid-vol-frac "Max" solid vof mixture () y 3 n y "solution/monitors/sol-vol-frac.txt" 1 y flow-time
+
+
+; --------------------------------------------------------------------------------------------
+; Autosave
+; --------------------------------------------------------------------------------------------
+
+/file/auto-save/data-frequency 10000
+/file/auto-save/append-file-name-with time-step 6
+/file/auto-save/root-name "solution/casefiles/case"
+
+
+; --------------------------------------------------------------------------------------------
+; CFD post data export
+; --------------------------------------------------------------------------------------------
+
+/file/transient-export/delete cfd-post
+/file/export/cfd-post-compatible solution/cfd-post/case-0.000000 , , solid-vof solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-frictional-viscosity q y ,
+/file/transient-export/cfd-post-compatible solution/cfd-post/case , , solid-vof solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-frictional-viscosity q , n cfd-post 100 flow-time 6
+; Other quantities to write to cfd-post files:
+; fluid-velocity-magnitude solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-granular-pressure solid-frictional-viscosity solid-granular-temperature solid-dynamic-pressure solid-viscosity-lam solid-total-pressure
+
+
+; --------------------------------------------------------------------------------------------
+; Execute Commands (Display results during computations)
+; --------------------------------------------------------------------------------------------
+
+/solve/execute-commands/add-edit command-1 1 "time-step" "/display/set-window 4"
+/solve/execute-commands/add-edit command-2 1 "time-step" "/display/contour solid vof , ,"
+/solve/execute-commands/add-edit command-3 1 "time-step" "/display/set/contours/filled-contours n"
+/solve/execute-commands/add-edit command-4 1 "time-step" "/display/re-render"
+/solve/execute-commands/add-edit command-5 1 "time-step" "/display/set/overlays y"
+/solve/execute-commands/add-edit command-6 1 "time-step" "/display/vector solid velocity solid velocity-magnitude , , , ,"
+
+/display/set-window 4
+/display/contour solid vof , ,
+/display/set/contours/filled-contours n
+/display/re-render
+/display/set/overlays y
+/display/vector solid velocity solid velocity-magnitude , , , ,
+
+
+; --------------------------------------------------------------------------------------------
+; Solve
+; --------------------------------------------------------------------------------------------
+
+;/define/user-defined/compiled-functions unload "libudf"
+/file/write-case-data "solution/casefiles/case-0.cas" OK
+
+/solve/set/time-step 1e-3
+/solve/dual-time-iterate 160000 40
+
+
+; --------------------------------------------------------------------------------------------
+; Write to file
+; --------------------------------------------------------------------------------------------
+
+/file/write-case-data "solution/casefiles/case-solved.cas" OK
+/file/export/ascii "solution/exports/vof_final_nv.txt" interior-mixture () , solid-vof () n
+/file/export/ascii "solution/exports/vof_final_cc.txt" interior-mixture () , solid-vof () n
+/report/summary y "solution/reports/casesetup.txt"

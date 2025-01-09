@@ -1,0 +1,362 @@
+; --------------------------------------------------------------------------------------------
+; Case definition of turbulent pipe/annular flow
+; --------------------------------------------------------------------------------------------
+
+; 17.05.208, alexander.busch@alumni.ntnu.no
+
+; Reads mesh and generates a generic case file with the following features
+; - Compiled Cross rheology UDF (accounts for my_inf as oppsosed to the Fluent built-in Cross model)
+; - Periodic BC
+; - Scaled Cross properties acc. to DNS of Are Simonsen (alternatively, change the Cell Zone BC to use other material properties)
+; - Specification of mass flow rate and guess of pressure gradient. This is required for low Re k-epsiolon numbers; however, not so for k-omega.
+; - Initialisation of flow field with x-velocity = bulk velocity, turbulent quantities  = 1
+; - Monitoring of mass flow rate, bulk velocity and pressure gradient as well as export of final solution data
+; - On-the-fly contour plots of pressure field and overlayed velocity vectors
+
+; HOW TO
+;  1 - Ensure that MS Visual Studio is set-upt, otherwise comment out the respective lines in section "UDF"
+;  2 - Paste "/file/read-journal SETUP_GenericCase.jou" in TUI
+;  3 - Paste "/file/read-journal RUN_PressureGradientSweep.jou" in TUI to run simulations for defined pressure gradients/mass flow rates
+
+
+; --------------------------------------------------------------------------------------------
+; Parameter definitions
+; --------------------------------------------------------------------------------------------
+
+; Water
+(if (not (rp-var-object 'h2o/rho))	(rp-var-define 'h2o/rho 998.2 'real #f))
+(if (not (rp-var-object 'h2o/eta))	(rp-var-define 'h2o/eta 0.001002 'real #f))
+(if (not (rp-var-object 'h2o/rho/scaled))	(rp-var-define 'h2o/rho/scaled 1 'real #f))
+(if (not (rp-var-object 'h2o/eta/scaled))	(rp-var-define 'h2o/eta/scaled 2.25575e-05 'real #f))
+
+
+; Non-Newtonian - Power Law
+(if (not (rp-var-object 'pl/rho/scaled))	(rp-var-define 'pl/rho/scaled 1 'real #f))
+(if (not (rp-var-object 'pl/k/scaled))	(rp-var-define 'pl/k/scaled 0.00030266 'real #f))
+(if (not (rp-var-object 'pl/n/scaled))	(rp-var-define 'pl/n/scaled 0.68 'real #f))
+
+; Non-Newtonian - Cross
+(if (not (rp-var-object 'cross/rho/scaled))	(rp-var-define 'cross/rho/scaled 1 'real #f))
+(if (not (rp-var-object 'cross/k/scaled))	(rp-var-define 'cross/k/scaled 9.58246 'real #f))
+(if (not (rp-var-object 'cross/n/scaled))	(rp-var-define 'cross/n/scaled 0.60888 'real #f))
+(if (not (rp-var-object 'cross/mu_0/scaled))	(rp-var-define 'cross/mu_0/scaled 9.4807e-04 'real #f))
+(if (not (rp-var-object 'cross/mu_inf/scaled))	(rp-var-define 'cross/mu_inf/scaled 9.4807e-06 'real #f))
+
+; Get and set parameter
+;(rpgetvar 'h2o/rho/scaled)
+;(rpsetvar 'h2o/rho/scaled 3)
+;(rpgetvar 'cross/k/scaled) 
+;(rpsetvar 'variable 3)
+
+
+
+; --------------------------------------------------------------------------------------------
+; Change color scheme
+; --------------------------------------------------------------------------------------------
+
+
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Purge working directory
+; --------------------------------------------------------------------------------------------
+
+!if exist reports rmdir /s /q reports
+!mkdir reports
+!if exist exports rmdir /s /q exports
+!mkdir exports
+!if exist monitors rmdir /s /q monitors
+!mkdir monitors
+!if exist solved rmdir /s /q solved
+!mkdir solved
+
+
+; --------------------------------------------------------------------------------------------
+; UDF
+; --------------------------------------------------------------------------------------------
+
+; Define UDM
+
+; Compile
+;/define/user-defined/compiled-functions unload "libudf"
+!if exist libudf rmdir /s /q libudf
+/define/user-defined/compiled-functions compile "libudf" y "rheology.c" , ,
+
+; Load library and hook UDFs
+/define/user-defined/compiled-functions load "libudf"
+
+; Modify makefile in order to debug with VS - SERIAL
+!if exist "libudf\win64\3ddp\makefile" jrepl "CFLAGS = /c /Za" "CFLAGS = /c /Od /Zi" /f libudf\win64\3ddp\makefile /o -
+!if exist "libudf\win64\3ddp\makefile" jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\3ddp\makefile /o -
+
+; Open source file in VS 
+ Open multiple files in one VS instance https://stackoverflow.com/questions/14601859/how-to-open-files-in-one-instance-using-visual-studio
+!if exist "libudf/src/rheology.c" "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" /edit "libudf/src/rheology.c"&
+
+; Recompile using VS via Fluent, different compile commands for serial/parallel in .bat file 
+/define/user-defined/compiled-functions unload "libudf"
+(system "cmd /c recompile.bat")
+!if exist "libudf/src/rheology.c" copy /y libudf\src\rheology.c
+/define/user-defined/compiled-functions load "libudf"
+
+; Attach instance of VS to process using CTRL+ALT+P
+(cx-pause)
+
+
+; --------------------------------------------------------------------------------------------
+; Mesh & surface operations
+; --------------------------------------------------------------------------------------------
+
+; Read mesh
+;/file/read-case "C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\workbench\p_d1_L1_FLH1e-3.msh"
+/file/read-case "C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\workbench\a_e0_d1_L1_FLH5e-4.msh"
+
+; Check mesh
+/mesh/size-info
+/mesh/quality
+/mesh/repair-improve/improve-quality
+/mesh/repair-improve/report-poor-elements
+
+; Create vertical line
+;/surface/line-surface line_xy 3.14 -0.5 0 3.14 0.5 0
+/surface/line-surface line_xy 0.5 -0.5 0 0.5 0.5 0
+
+; Create center planes
+;/surface/plane-point-n-normal plane_yz 3.14 0 0 1 0 0
+/surface/plane-point-n-normal plane_yz 0.5 0 0 1 0 0
+/surface/plane-point-n-normal plane_xy 0 0 0 0 0 1
+
+
+; --------------------------------------------------------------------------------------------
+; General
+; --------------------------------------------------------------------------------------------
+
+/define/operating-conditions/gravity y 0 -9.81 0
+
+; Set operating density and reference density such that pressure field includes hydrostatic term http://www.eureka.im/1261.html
+;/define/operating-conditions/reference-pressure-location 0.4 0.04 1
+;/define/operating-conditions/operating-density? y 0
+; Reference density is defined in section "Reference values" and must be equal to zero
+
+; Transient
+;/define/models/unsteady-1nd-order y
+;/define/models/unsteady-2nd-order y
+; In case of first order set adaptive time stepping under "Solution Controls"
+
+;/solve/set/expert , , y y
+; Linearized Mass Transfer UDF
+; Save cell residuals for post-processing?
+; Keep temporary solver memory from being freed?
+; Allow selection of all applicable discretization schemes?
+
+;solve/set/mp-reference-density 3
+
+
+; --------------------------------------------------------------------------------------------
+; Models
+; --------------------------------------------------------------------------------------------
+
+; Laminar
+;/define/models/viscous laminar y
+
+; Turbulent, Low Reynolds number k-epsilon (Lam-Bremhorst 1981) with non-Newtonian damping function modification (Malin 1997)
+;/define/models/viscous/ke-standard? y
+;/define/models/viscous/turbulence-expert/low-re-ke? y
+;/define/models/viscous/turbulence-expert/low-re-ke-index 1
+;/define/models/viscous/turbulence-expert/turb-non-newtonian? y
+;/define/models/viscous/turbulence-expert/non-newtonian-modification? y
+
+; Turbulent, Low Reynolds number k-omega SST
+/define/models/viscous kw-sst y
+;/define/models/viscous/kw-low-re-correction? y
+/define/models/viscous/turbulence-expert/turb-non-newtonian y
+
+
+; --------------------------------------------------------------------------------------------
+; Materials
+; --------------------------------------------------------------------------------------------
+
+; H2O
+/define/materials/copy fluid water
+/define/materials/change-create water-liquid h2o y constant (rpgetvar 'h2o/rho) n n y constant (rpgetvar 'h2o/eta) n n n y
+/define/materials/change-create h2o h2o-scaled y constant (rpgetvar 'h2o/rho/scaled) n n y constant (rpgetvar 'h2o/eta/scaled) n n n n
+
+; PL
+/define/materials/change-create h2o pl-scaled y constant (rpgetvar 'pl/rho/scaled) n n y non-newtonian-power-law shear-rate-dependent (rpgetvar 'pl/k/scaled) (rpgetvar 'pl/n/scaled) 0 0 n n n n
+
+; Cross
+;/define/materials/change-create h2o cross-scaled y constant (rpgetvar 'cross/rho/scaled) n n y user-defined "rheology_cross::libudf" n n n n
+
+
+; --------------------------------------------------------------------------------------------
+; BC
+; --------------------------------------------------------------------------------------------
+
+; Fluid zone
+/define/boundary-conditions/modify-zones/zone-name interior-fluid interior
+/define/boundary-conditions/fluid fluid y pl-scaled , , , , , , , , , , , , , , , , , , , ,
+/define/materials/delete air
+
+; Periodic
+/define/boundary-conditions/modify-zones/make-periodic inlet outlet n y y
+/define/boundary-conditions/modify-zones/zone-name inlet periodic
+;/surface/rename-surface inlet periodic
+;/define/periodic-conditions/pressure-gradient-specification -0.04 1 0 0
+/define/periodic-conditions/massflow-rate-specification 1.14 -0.04 0.5 5 1 0 0
+
+; Wall
+; Annulus: Specify rotation of inner pipe as slip velocity
+
+
+
+; --------------------------------------------------------------------------------------------
+; Reference values
+; --------------------------------------------------------------------------------------------
+
+/report/reference-values/area 7.85e-01
+/report/reference-values/density (rpgetvar 'h2o/rho/scaled)
+/report/reference-values/enthalpy 0
+/report/reference-values/length 6.28
+/report/reference-values/pressure 0
+/report/reference-values/temperature 293.15
+/report/reference-values/velocity 1
+/report/reference-values/viscosity (rpgetvar 'h2o/eta/scaled)
+
+
+; --------------------------------------------------------------------------------------------
+; Solution Methods
+; --------------------------------------------------------------------------------------------
+
+/solve/set/p-v-coupling 21 y
+; 20 - SIMPLE
+; 21 - SIMPLEC
+; 22 - PISO
+; 23 - Phase Coupled SIMPLE
+; 24 - Coupled
+
+/solve/set/gradient-scheme n y
+; Green-Gauss Node-Based 
+; Least-Squares Cell-Based Default
+; Green-Gauss Cell-Based
+
+/solve/set/discretization-scheme pressure 12
+; 10 - Standard
+; 11 - Linear
+; 12 - Second Order
+; 13 - Body Force Weighted
+; 14 - PRESTO!
+
+/solve/set/discretization-scheme mom 1
+/solve/set/discretization-scheme k 1
+/solve/set/discretization-scheme epsilon 1
+;/solve/set/discretization-scheme omega 1
+; 0 - First Order Upwind
+; 1 - Second Order Upwind
+; 2 - Power-Law
+; 3 - Modified HRIC
+; 4 - QUICK
+; 5 - Modified HRIC
+; 6 - Third-Order MUSCL
+
+; Transient Formulation see "General"
+
+
+
+; --------------------------------------------------------------------------------------------
+; Solution Controls
+; --------------------------------------------------------------------------------------------
+
+;/solve/set/under-relaxation pressure 0.3
+;/solve/set/under-relaxation density 1
+;/solve/set/under-relaxation body-force 1
+/solve/set/under-relaxation mom 0.5
+;/solve/set/under-relaxation mp 0.5
+/solve/set/under-relaxation k 0.5
+;/solve/set/under-relaxation omega 0.5
+/solve/set/under-relaxation epsilon 0.5
+/solve/set/under-relaxation turb-viscosity 0.5
+
+
+; --------------------------------------------------------------------------------------------
+; Monitors
+; --------------------------------------------------------------------------------------------
+
+; Residuals
+/solve/monitors/residual/print n
+/solve/monitors/residual/plot y
+/solve/monitors/residual/window 1
+/solve/monitors/residual/convergence-criteria 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6
+/solve/monitors/residual/check-convergence y n n n n n
+; Check convergence of continuity residuals?
+; Check convergence of x-velocity residuals?
+; Check convergence of y-velocity residuals?
+; Check convergence of z-velocity residuals?
+; Check convergence of k residuals?
+; Check convergence of omega residuals?
+
+; Mass flow rate & bulk velocity, pressure gradient
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y 
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+
+
+; --------------------------------------------------------------------------------------------
+; Initialization
+; --------------------------------------------------------------------------------------------
+
+; Set default values in entire domain
+/solve/initialize/hyb-initialization OK
+
+/solve/initialize/set-defaults/ x-velocity 1.451
+/solve/initialize/set-defaults/ y-velocity 0
+/solve/initialize/set-defaults/ z-velocity 0
+/solve/initialize/set-defaults/ k 1
+/solve/initialize/set-defaults/ epsilon 1
+;/solve/initialize/set-defaults/ omega 1
+
+/solve/initialize/initialize-flow y
+
+/solve/initialize/repair-wall-distance ,
+
+; --------------------------------------------------------------------------------------------
+; Display initialized velocity field
+; --------------------------------------------------------------------------------------------
+
+/display/set/contours/auto-range? n
+/display/set/contours/filled-contours? y
+/display/set/contours/surfaces plane_xy periodic plane_yz ()
+/display/contour x-velocity , ,
+;(cx-pause)
+
+
+; --------------------------------------------------------------------------------------------
+; Execute Commands
+; --------------------------------------------------------------------------------------------
+
+; create countour plot on  window 4 which is then updated on the fly
+;displayset-window 4
+;display/contour pressure , ,
+;display/set/overlays y
+;display/vector velocity velocity-magnitude , , 1 0
+
+;solve/execute-commands/add-edit command-1 1 "iteration" "/display/set-window 4"
+;solve/execute-commands/add-edit command-2 1 "iteration" "/display/contour pressure , ,"
+;solve/execute-commands/add-edit command-3 1 "iteration" "/display/set/overlays y"
+;solve/execute-commands/add-edit command-4 1 "iteration" "/display/vector velocity velocity-magnitude , , 1 0"
+
+
+; --------------------------------------------------------------------------------------------
+; Write case
+; --------------------------------------------------------------------------------------------
+
+;/file/write-case-data "pipe.cas" OK
+/file/write-case-data "annulus.cas" OK
+

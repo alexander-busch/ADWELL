@@ -1,0 +1,95 @@
+
+\section{Positivity preservation}
+\label{sec:PP}
+
+In the previous two \cref{sec:LTS-HLL(C),sec:EV-ME} we presented results on the construction of LTS-HLL-type schemes and the entropy violation by some of them. These results are related to our papers~\cite{cp2,jp2}, but we presented them in detail because we focused on scalar conservation laws, while our papers~\cite{cp2,jp2} focused on the Euler equations.
+
+In this section we present our results on monotonicity and positivity preservation in LTS methods, with a focus on the positivity preserving property of LTS methods for the Euler equations. The content of this section very closely follows our paper~\cite{jp3}, and this section is more a summary than a presentation of its own. The main results in~\cite{jp3} are:
+\begin{itemize}
+\item a set of conditions on the numerical flux function of an LTS method that guarantees that the method is monotone;
+\item a proof that the LTS-Lax-Friedrichs scheme of Lindqvist et al.~\cite{lin16} for scalar conservation laws is monotone;
+\item a proof that the LTS-HLLE scheme is not positivity preserving, unlike its standard counterpart the HLLE scheme;
+\item a proof that the LTS-Lax-Friedrichs scheme of Lindqvist et al.~\cite{lin16} for systems of conservation laws is positivity preserving for one-dimensional Euler equations.
+\end{itemize}
+
+\subsection{Monotonicity}
+
+The question of monotonicity was introduced earlier in \cref{sec:SCL} where we considered mathematical properties of scalar conservation laws. Therein, a class of monotone schemes was introduced because they possess two very attractive properties:
+\begin{itemize}
+\item Monotone schemes satisfy the discrete version of the strict maximum principle \eqref{eq:PDE-maximum}. Let us define:
+\begin{equation}
+m = \underset{j}{\min} (u_j^0 ), \quad M = \underset{j}{\max} (u_j^0),
+\end{equation}
+then the monotone scheme guarantees that:
+\begin{equation} \label{eq:discrete-maximum}
+u_j^n \in [m,M] \quad \forall \quad j,n.
+\end{equation} 
+\item Monotone schemes are E-schemes, hence they converge to the entropy solution.
+\end{itemize}
+Unfortunately, monotone schemes have a third, less attractive property -- they are at best first-order accurate~\cite{osh84}. Further, even though they cannot introduce new extrema, monotone LTS methods can produce oscillatory solutions, as was shown by Tang and Warnecke~\cite{tan04}. Nevertheless, monotone schemes are an essential tool in development of numerical methods and their understanding is important for many aspects of numerical modeling. The monotone scheme is defined as:
+\begin{definition}[Harten et al.~\cite{har76}, Trangenstein~\cite{tra09}] \label{def:MS}
+An explicit numerical method:
+\begin{equation}
+u_j^{n+1} = \mathcal{H} (u_{j-k}, \dots, u_{j+k}; \Delta x, \Delta t),
+\end{equation}
+is monotone if and only if it preserves inequalities between sets of numerical results:
+\begin{equation}
+\forall \, u_j^n, \, \forall \, v_j^n \quad
+\text{if} \quad \forall \, j \quad
+u_j^n \leq v_j^n,
+\end{equation}
+then $ \forall \, j $:
+\begin{equation}
+u_j^{n+1} = \mathcal{H} (u_{j-k}, \dots, u_{j+k}; \Delta x, \Delta t)
+\leq
+\mathcal{H} (v_{j-k}, \dots, v_{j+k}; \Delta x, \Delta t) = v_j^{n+1}.
+\end{equation}
+\end{definition}
+We can determine if the method is monotone by the following result:
+\begin{lemma}[Trangenstein~\cite{tra09}] \label{lemma:MS-conditionH}
+Suppose that:
+\begin{equation} \label{eq:scalar-standardH}
+u_j^{n+1} = \mathcal{H} (u_{j-k}, \dots, u_{j+k}; \Delta x, \Delta t),
+\end{equation}
+is a monotone scheme and that it is differentiable in each of its $ u_l $ arguments for $ j-k \leq  l \leq j+k $. Then:
+\begin{equation} 
+\frac{\partial \mathcal{H}}{\partial u_l} \geq 0, \quad \forall \quad j-k \leq l \leq j+k.
+\end{equation}
+Conversely, if:
+\begin{equation} \label{eq:MS-conditionH}
+\frac{\partial \mathcal{H}}{\partial u_l} \geq 0, \quad \forall \quad j-k \leq l \leq j+k,
+\end{equation}
+then \eqref{eq:scalar-standardH} is a monotone scheme.
+\end{lemma}
+A standard numerical method is monotone if the numerical flux function $ F(u_j,u_{j+1}) $ is non-decreasing in its first argument, non-increasing in its second argument and the CFL condition \eqref{eq:scalar-CFL} holds. 
+
+The first result in our paper~\cite{jp3} is the set of conditions on the numerical flux function of an LTS method that ensures that the method is monotone. The conditions are given in Proposition~1 of paper~\cite{jp3}, which also includes the proof. In addition, by using \Cref{lemma:MS-conditionH} we prove that the LTS-Lax-Friedrichs scheme of Lindqvist et al.~\cite{lin16} is monotone.
+
+\subsection{Positivity preservation}
+
+When we consider systems of equations, it may be unreasonable to require that a certain conserved variable remains bounded between its initial values at all time. However, it is often natural to require that some variables remain bounded in some specific sense, such as for example the positivity of density and internal energy in the Euler equations or positivity of water depth in the shallow water equations. We will denote such density and internal energy as physically real. If the scheme satisfies:
+\begin{equation} \label{eq:density-positivity}
+\rho_j^n > 0, \quad \forall \, j,n,
+\end{equation}
+as well as the positivity of other variables of interest, we say that the scheme is positivity preserving.
+\begin{definition}[Einfeldt et al.~\cite{ein91}]
+A class of schemes that always generates physically real solutions from physically real data is denoted as positivity preserving schemes.
+\end{definition}
+Condition \eqref{eq:density-positivity} is so natural that it is somewhat surprising (and disappointing) that many popular schemes do not guarantee positivity preservation. Namely, certain generally well-behaved schemes may completely fail for certain types of initial data, and the question of positivity preservation is an ongoing field of research. Notable results include the paper by Einfeldt et al.~\cite{ein91}, where it is shown that the Godunov and HLLE schemes are positivity preserving, while the Roe scheme is not, the paper by Batten et al.~\cite{bat97} where they showed that the HLLC~\cite{tor94} scheme is positivity preserving with an appropriate choice of wave velocity estimates, the work by Perthame and Shu~\cite{per96} where they established a general framework to achieve high-order positivity preserving methods for the Euler equations in one and two dimensions, and the book by  Bouchut~\cite{bou04} where the conditions on the wave velocities estimates are determined so that the HLLC scheme can also handle vacuum. Areas of interest include the Euler equations (Calgaro et al.~\cite{cal13}, Hu et al.~\cite{hu13}, Li et al.~\cite{li17}, Zhang and Shu~\cite{zha10b,zha11,zha12}), shallow water equations~\cite{shi16,kur07,xin10,aud05}, magnetohydrodynamics~\cite{bal99,jan00,gal03}, multiphase flows (Chen and Shu~\cite{che14}), unstructured meshes (Berthon~\cite{ber06}) and flux-vector splitting methods (Gressier et al.~\cite{gre99}), to name just a few. These papers consider standard methods and mostly tackle issues with positivity preserving that arise in high-order methods. 
+
+We considered the positivity preservation in LTS methods. The positivity preservation in the LTS-Roe scheme has been addressed by Morales-Hern\'{a}ndez and co-workers~\cite{mor12a,mor14}, where they considered the shallow water equations with source terms, and suggested to handle loss of positivity by reducing the Courant number when the loss of positivity is likely to happen. We took a slightly different direction and focused on the loss of positivity in the LTS-HLLE scheme, and on increasing the robustness of the LTS-HLLE scheme by adding numerical diffusion. We outline our two main results below.
+
+We considered the classical result by Einfeldt et al.~\cite{ein91}:
+\begin{lemma}[Einfeldt et al.~\cite{ein91}]
+An approximate Riemann solver leads to a positively conservative scheme if and only if all the states generated are physically real.
+\end{lemma} 
+An example of such Riemann solver is the HLLE scheme, and the generated states in question are intermediate states appearing across the Riemann fan. Our first result related to positivity preservation is showing that physically real intermediate states are a necessary, but not a sufficient condition for positivity preservation in the LTS methods. We did this by considering the LTS-HLLE scheme, for which all intermediate states are physically real, and showing that it is not positivity preserving for the Euler equations (see paper~\cite{jp3}). 
+
+Our second result is the proof that the LTS-Lax-Friedrichs scheme of Lindqvist et al.~\cite{lin16} is positivity preserving for the Euler equations. Our proof closely follows the proof by Zhang and Shu~\cite{zha10b} where they showed that the standard Lax-Friedrichs scheme is positivity preserving for the Euler equations. We follow their proof and generalize it to hold under the relaxed CFL condition \eqref{eq:scalar-CFL-LTS} (see paper~\cite{jp3}, Proposition 3).
+
+In order to make the LTS-HLLE scheme more robust, we defined the wave velocity estimates as a convex combination:
+\begin{equation} \label{eq:LTS-HLLE-beta}
+\SL = \left( 1 - \beta \right) \SL^\text{E} + \beta \SL^\text{LxF}, \qquad
+\SR = \left( 1 - \beta \right) \SR^\text{E} + \beta \SR^\text{LxF},
+\end{equation}
+where $ S_\text{L,R}^\text{E} $ are the wave velocity estimates according to Einfeldt \eqref{eq:system-Einfeldt}, and $ S_\text{L,R}^\text{LxF} $ are the wave velocity estimates corresponding to the Lax-Friedrichs scheme \eqref{eq:system-SLSR-LxF}. This approach reduced oscillations, and provided an increase in robustness in a sense that we could use the scheme defined by \eqref{eq:LTS-HLLE-beta} for Courant numbers at which the LTS-HLLE scheme would lose positivity. However, such a straightforward increase in numerical diffusion across all cells and all time steps also led to a decrease in accuracy. We believe that this can be improved by selectively introducing numerical diffusion only when it is necessary to preserve positivity. That way positivity would be ensured, while the solution would be kept as sharp as possible. Numerical results obtained with the LTS-HLLE scheme and LTS-HLLE$ \beta $ \eqref{eq:LTS-HLLE-beta} schemes can be found in our paper~\cite{jp3}, where we applied them to the one-dimensional Euler equations and considered double rarefaction, LeBlanc's shock tube and the Sedov blast-wave as test cases.

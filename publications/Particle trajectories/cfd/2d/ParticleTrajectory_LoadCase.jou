@@ -1,0 +1,80 @@
+; Load case 
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Working directory clean up
+; --------------------------------------------------------------------------------------------
+!if exist libudf rmdir /s /q libudf
+
+
+; --------------------------------------------------------------------------------------------
+; Load case
+; --------------------------------------------------------------------------------------------
+/file/read-case-data "case_with_traps_refined.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Compile via Fluent, modify makefile (SERIAL)
+; --------------------------------------------------------------------------------------------
+; /define/user-defined/compiled-functions compile "libudf" y "exp_velocity_profile.c" "particle_drag_force.c" "showgrad.c" , "ParticleTrajectory.h" ,
+!if exist "libudf\win64\2ddp\makefile" jrepl "CFLAGS = /c /Za /DUDF_EXPORTING /DUDF_NT" "CFLAGS = /c /Od /Zi /DUDF_EXPORTING /DUDF_NT" /f libudf\win64\2ddp\makefile /o -
+!if exist "libudf\win64\2ddp\makefile" jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\2ddp\makefile /o -
+
+
+; --------------------------------------------------------------------------------------------
+; Open in VS, recompile and rehook drag law UDF
+; --------------------------------------------------------------------------------------------
+
+; Open source file in VS
+; !if exist "libudf/src/particle_drag_force.c" "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" /edit "libudf/src/particle_drag_force.c" &
+!if exist "libudf/src/exp_velocity_profile.c" "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" /edit "libudf/src/exp_velocity_profile.c" &
+
+; Recompile using VS via Fluent, different compile commands for serial/parallel in .bat file 
+/define/user-defined/compiled-functions unload "libudf"
+(system "cmd /c recompile.bat")
+!if exist "libudf/src/particle_drag_force.c" copy /y libudf\src\particle_drag_force.c
+!if exist "libudf/src/exp_velocity_profile.c" copy /y libudf\src\exp_velocity_profile.c
+/define/user-defined/compiled-functions load "libudf"
+
+; Rehook particle_drag_force UDF
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters "particle_drag_force::libudf"
+
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Solve
+; --------------------------------------------------------------------------------------------
+
+/solve/initialize/initialize-flow y
+
+/solve/iterate 600
+
+
+
+; --------------------------------------------------------------------------------------------
+; Post-processing
+; --------------------------------------------------------------------------------------------
+
+; Change color scheme
+display/set/colors/color-scheme classic
+display/set/colors/background "white"
+display/set/colors/foreground "black"
+display/re-render
+
+; Create contour plot
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/save-picture images/xy_pac4-cross_ubulk0.085_dp2mm_new.png OK
+
+
+/display/particle-tracks/plot-write-xy-plot x-coordinate , , time , , y "exports/pac4-cross_ubulk0.085_dp2mm_new_x.txt" OK
+/display/particle-tracks/plot-write-xy-plot y-coordinate , , time , , y "exports/pac4-cross_ubulk0.085_dp2mm_new_y.txt" OK
+/display/particle-tracks/plot-write-xy-plot particle-reynolds-number , , time , , y "exports/pac4-cross_ubulk0.085_dp2mm_new_rep.txt" OK

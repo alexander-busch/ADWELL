@@ -1,0 +1,371 @@
+; ----------------------------------------------------------------------------------------------------------------------
+
+file/read-case "Annulus_conc.cas" ,
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+
+; Define material properties -----------------------------------------------------------
+
+/define/materials/change-create pac1-pl_PipVis pac1-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.029193 0.875 0 0 n n n
+/define/materials/change-create pac2-pl_PipVis pac2-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.089477 0.755 0 0 n n n
+/define/materials/change-create pac4-pl_PipVis pac4-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.43325 0.627 0 0 n n n
+
+; PAC1-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac1-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC1-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC1-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC1-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC1-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC1-PL-PipVis_5.cas"
+
+
+
+; PAC2-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac2-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC2-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC2-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC2-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC2-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC2-PL-PipVis_5.cas"
+
+
+
+; PAC4-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac4-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC4-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC4-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC4-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC4-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_PAC4-PL-PipVis_5.cas"
+
+
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+file/read-case "Annulus_ecc.cas" ,
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+
+
+; Define material properties -----------------------------------------------------------
+
+/define/materials/change-create pac1-pl_PipVis pac1-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.029193 0.875 0 0 n n n
+/define/materials/change-create pac2-pl_PipVis pac2-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.089477 0.755 0 0 n n n
+/define/materials/change-create pac4-pl_PipVis pac4-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.43325 0.627 0 0 n n n
+
+
+
+; PAC1-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac1-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC1-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC1-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC1-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC1-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC1-PL-PipVis_5.cas"
+
+
+
+; PAC2-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac2-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC2-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC2-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC2-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC2-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC2-PL-PipVis_5.cas"
+
+
+
+; PAC4-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac4-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC4-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC4-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC4-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC4-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "Ae_PAC4-PL-PipVis_5.cas"
+
+
+
+
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+file/read-case "Pipe.cas" ,
+
+; ----------------------------------------------------------------------------------------------------------------------
+
+
+; Define material properties -----------------------------------------------------------
+
+/define/materials/change-create pac1-pl_PipVis pac1-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.029193 0.875 0 0 n n n
+/define/materials/change-create pac2-pl_PipVis pac2-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.089477 0.755 0 0 n n n
+/define/materials/change-create pac4-pl_PipVis pac4-pl_PipVis n n n y non-newtonian-power-law shear-rate-dependent 0.43325 0.627 0 0 n n n
+
+
+; PAC1-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac1-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC1-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC1-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC1-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC1-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC1-PL-PipVis_5.cas"
+
+
+
+; PAC2-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac2-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC2-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC2-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC2-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC2-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC2-PL-PipVis_5.cas"
+
+
+
+
+
+; PAC4-PL_PipVis ------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pac4-pl_PipVis , , , , , , , , , , , , , , , , , , ,
+
+define/periodic-conditions/massflow-rate-specification 0.1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC4-PL-PipVis_1.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.25 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC4-PL-PipVis_2.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.5 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC4-PL-PipVis_3.cas"
+
+define/periodic-conditions/massflow-rate-specification 0.75 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC4-PL-PipVis_4.cas"
+
+define/periodic-conditions/massflow-rate-specification 1 , 0.5 2 1 0 0
+solve/initialize/hyb-initialization ok ,
+; solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P_PAC4-PL-PipVis_5.cas"
+
+
+

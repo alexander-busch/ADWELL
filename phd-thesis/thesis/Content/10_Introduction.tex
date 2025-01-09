@@ -1,0 +1,52 @@
+\label{cha:Introduction}
+
+\section{Motivation}
+
+phenomena \cite{busch2018}
+phenomena~\cite{busch2018a}
+phenomena~\cite{busch2018b}
+phenomena~\cite{busch2018c}
+phenomena~\cite{busch2017}\\
+
+phenomena~\cite{aarsnes2018}
+phenomena~\cite{khatibi2017}
+phenomena~\cite{busch2017a}
+phenomena~\cite{busch2016}
+phenomena~\cite{zoric2015}\\
+
+\nomenclature{$x$}{Description}
+\nomenclature{$y$}{Description}
+
+Hyperbolic conservation laws are widely used to model a variety of physical phenomena, such as fluid dynamics, geophysics, biomechanics, electrodynamics, magnetohydrodynamics, astrophysics, etc. They are also heavily used in modeling multiphase flow phenomena~\cite{doraiswamy2002}, which is of particular interest for the SIMCOFLOW project~\cite{wallis1969}\footnote{The PhD project is a part of the research project \textit{SIMCOFLOW -- a framework for complex 3D multiphase and multi physics flows} carried out by SINTEF Materials and Chemistry from July 2014 until June 2017 and funded by the Research Council of Norway.}. In this thesis, we consider already existing models and focus on numerical methods for hyperbolic conservation laws rather than on physical modeling. To simplify the analysis, we mostly use simpler models (such as the Euler equations) instead of more complicated multiphase flow models. However, we believe that the numerical tools developed here should be applicable to a wide class of hyperbolic problems.
+
+\section{State of the art}
+\label{sec:history}
+
+
+\section{Goals and thesis outline}
+\label{cha1:sec:goals}
+
+ In particular, our goals are:
+\begin{itemize}
+\item Develop LTS extensions of the HLL and HLLC schemes.
+\item Study entropy stability of the LTS-HLL(C) schemes.
+\item Study positivity preservation of the LTS-HLL(C) schemes.
+\item Study boundary and source term treatment in the LTS methods.
+\end{itemize}
+
+The thesis outline and contributions can be summarized as follows: in chapter~\ref{cha:Background} we present the mathematical models we solve, we outline the framework of the numerical methods we will consider, and we present the existing LTS methods. In chapter~\ref{cha:LTS-HLL} we present the main results:
+\begin{itemize}
+\item In \cref{sec:LTS-HLL(C)} we develop LTS extensions of the HLL and HLLC schemes. We develop the LTS-HLL-type schemes, we determine their numerical viscosity and flux-difference splitting coefficients, and we investigate their convergence. This new class of schemes allows us to deduce some already existing LTS methods such as the LTS-Roe and LTS-Lax-Friedrichs, and it allows us to deduce LTS extensions of other methods, such as the Rusanov and Engquist-Osher schemes. Parts of this section are adapted from our second journal paper \textit{Large Time Step HLL and HLLC Schemes}~\cite{jp2}.
+
+\item In \cref{sec:EV-ME} we study entropy stability of LTS-HLL-type schemes. We use modified equation analysis to investigate how entropy violations occur in the LTS-HLL-type schemes and how can they be avoided. Parts of this section are adapted from our second conference paper \textit{Numerical Viscosity in Large Time Step HLL-type Schemes}~\cite{cp2}.
+
+\item In \cref{sec:PP} we study monotonicity and positivity preservation of LTS-HLL(C) schemes. We determine monotonicity conditions on numerical flux function of an LTS method, and we show that positivity preserving conditions in LTS methods are stronger than in standard methods. We investigate different ways how is positivity lost in the LTS-HLL scheme, and we propose a simple way to increase robustness of the scheme by adding numerical diffusion. This section closely follows our third journal paper \textit{Monotonicity and Positivity Preservation in Large Time Step Methods}~\cite{jp3}.
+\end{itemize}
+
+In addition to the work on the LTS-HLL(C) schemes, we applied the LTS-Roe scheme to a one-dimensional two-fluid model and focused on the treatment of the source terms and the boundary conditions. By introducing a new type of boundary conditions and by treating source terms in a similar way as 
+
+
+, we are able to notably improve accuracy of the solution. These results are presented in~\cref{cha:MPM}. Content of \cref{cha:MPM} corresponds to our first journal paper \textit{Large Time Step Roe Scheme for a Common 1D Two-Fluid Model}~\cite{jp1}, and our first conference paper \textit{Boundary and Source Term Treatment in the Large Time Step Method for a Common Two-Fluid Model}~\cite{cp1}. Finally, \cref{cha:Conclusions} closes with conclusions and comments regarding possible further research directions.
+
+In the presentation of the thesis results, we aimed to give a structured overview of our findings, but also tried to depict the order in which our work was done and how it was motivated.
+

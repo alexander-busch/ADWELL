@@ -1,0 +1,5 @@
+% Initially, change the background setting: Graphics & animations > options > color scheme > classic
+display/set/colors/color-scheme classic
+display/set/colors/background "white"
+display/set/colors/foreground "black"
+display/re-render

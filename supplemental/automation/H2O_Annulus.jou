@@ -1,0 +1,182 @@
+/define/periodic-conditions/massflow-rate-specification 0.25193 -150 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.104 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 6.904E-03
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 1.445E+02 ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A1.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.32072 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.136 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 5.517E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 1.292E+02 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A2.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.39210 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.162 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 4.688E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 1.191E+02 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A3.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.46368 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.333 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 4.121E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 1.116E+02 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A4.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.53537 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.222 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 2.871E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 9.317E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A5.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.61062 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.279 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 2.357E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 8.441E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A6.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.68336 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.338 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 1.879E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 7.537E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A7.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.75684 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.396 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 1.456E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 6.635E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A8.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.83814 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.455 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 1.087E-03 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 5.733E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A9.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.90450 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.513 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 7.608E-04 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 4.796E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A10.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.99343 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.573 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 5.002E-04 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 3.889E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A11.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.05598 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.630 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 5.002E-04 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 3.889E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A12.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.12586 , 0.5 2 1 0 0
+
+; /solve/initializeset-defaults/x 0.685 ,
+; /solve/initializeset-defaults/y 0 , 
+; /solve/initializeset-defaults/z 0 ,
+; /solve/initializeset-defaults/k 5.002E-04 ,
+; /solve/initializeset-defaults/omega 1.445E+02 ,
+; /solve/initializeset-defaults/epsilon 3.889E+01 ,
+; /solve/initializeinitialize-flow ok ,
+/solve/initialize/hyb-initialization ok ,
+/solve/initializeinitialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A13.cas"
+
+

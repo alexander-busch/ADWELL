@@ -1,0 +1,8 @@
+/display/set-window 5
+plot plot yes "vel_x_0-00.txt" n n n velocity y 1 0 0 line_x_0-00 ,
+/display/set-window 6
+plot plot yes "vel_x_0-04.txt" n n n velocity y 1 0 0 line_x_0-04 ,
+/display/set-window 7
+plot plot yes "vel_z_0-00.txt" n n n velocity y 0 0 1 line_z_0-00 ,
+/display/set-window 8
+plot plot yes "vel_z_0-04.txt" n n n velocity y 0 0 1 line_z_0-04 ,

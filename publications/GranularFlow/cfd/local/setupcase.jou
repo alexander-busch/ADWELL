@@ -1,0 +1,76 @@
+; --------------------------------------------------------------------------------------------
+; Setup case
+; --------------------------------------------------------------------------------------------
+; /file/write-case "C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Sand Pile\17.2\6 - Laux\remote\case.cas" OK
+; /file/read-journal journals\setupcase.jou
+; /file/read-case case.cas OK
+
+
+% Initially, change the background setting: Graphics & animations > options > color scheme > classic
+display/set/colors/color-scheme classic
+display/set/colors/background "white"
+display/set/colors/foreground "black"
+display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Definitions
+; --------------------------------------------------------------------------------------------
+
+; Fluid
+(if (not (rp-var-object 'rho_f))		(rp-var-define 'rho_f 1.225 'real #f))
+(if (not (rp-var-object 'mu_f))			(rp-var-define 'mu_f 1.7894e-05 'real #f))
+;(if (not (rp-var-object 'cross/lambda))	(rp-var-define 'cross/lambda 0.0 'real #f))
+;(if (not (rp-var-object 'cross/n))			(rp-var-define 'cross/n 0.0 'real #f))
+;(if (not (rp-var-object 'cross/mu_0))		(rp-var-define 'cross/mu_0 0.0 'real #f))
+;(if (not (rp-var-object 'cross/mu_inf))	(rp-var-define 'cross/mu_inf 0.0 'real #f))
+;(if (not (rp-var-object 'carreau/lambda))	(rp-var-define 'carreau/lambda 0.0 'real #f))
+;(if (not (rp-var-object 'carreau/n))		(rp-var-define 'carreau/n 0.0 'real #f))
+;(if (not (rp-var-object 'carreau/mu_0))	(rp-var-define 'carreau/mu_0 0.0 'real #f))
+;(if (not (rp-var-object 'carreau/mu_inf))	(rp-var-define 'carreau/mu_inf 0.0 'real #f))
+
+; Solid
+(if (not (rp-var-object 'rho_s))		(rp-var-define 'rho_s 2650 'real #f))
+(if (not (rp-var-object 'angle_intfric)) 	(rp-var-define 'angle_intfric 55 'real #f))
+(if (not (rp-var-object 'alpha_pack))	(rp-var-define 'alpha_pack 0.63 'real #f))
+(if (not (rp-var-object 'alpha_fric))	(rp-var-define 'alpha_fric 0.55 'real #f))
+(if (not (rp-var-object 'd_s))			(rp-var-define 'd_s 0.0001 'real #f))
+
+
+; (rpsetvar 'rho_f 1.225)
+; (rpgetvar 'rho_f)
+
+
+
+/define/materials/change-create air air y constant (%rpgetvar 'rho_f) n n y constant (%rpgetvar 'mu_f) n n n y
+/define/materials/change-create sand sand y constant (%rpgetvar 'rho_s) n n y constant (%rpgetvar 'mu_f) n n n y
+
+; --------------------------------------------------------------------------------------------
+; Reference values
+; --------------------------------------------------------------------------------------------
+
+/define/operating-conditions/gravity y 0 -9.81
+/define/operating-conditions/reference-pre-location 0.0 0.039
+
+; Set operating density and reference density such that pressure field includes hydrostatic term http://www.eureka.im/1261.html
+define/operating-conditions/operating-density? y 0.0
+;/define/operating-conditions/operating-pressure 101325
+
+; Reference values (rpgetvar 'rho_s)
+;/report/reference-values/area 1
+/report/reference-values/density (rpgetvar 'rho_s)
+;/report/reference-values/depth 1
+;/report/reference-values/enthalpy 0
+;/report/reference-values/length 1
+;/report/reference-values/pressure 0
+;/report/reference-values/temperature 288.16
+;/report/reference-values/velocity 1
+/;report/reference-values/viscosity (rpgetvar 'mu_f)
+
+; Store gradients
+solve/set/expert , , y ,
+
+; --------------------------------------------------------------------------------------------
+; Save case
+; --------------------------------------------------------------------------------------------
+/file/write-case "C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Sand Pile\17.2\remote\case.cas" OK

@@ -1,0 +1,240 @@
+
+
+/define/periodic-conditions/massflow-rate-specification 0.12693 -521 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e1.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.19788 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e2.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.27016 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e3.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.34601 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+; /solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_e4.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.41806 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e5.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.49201 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e6.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.56657 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e7.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.64545 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e8.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.71990 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e9.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.79735 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e10.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.87067 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e11.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.94345 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e12.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.02001 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e13.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.09095 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_e14.cas"
+
+
+
+; -----------------------------------------------------------------------------
+
+
+file/read-case "Annulus_conc.cas"
+
+
+; -----------------------------------------------------------------------------
+
+
+
+/define/periodic-conditions/massflow-rate-specification 0.12693 -521 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c1.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.19788 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c2.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.27016 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c3.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.34601 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+; /solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "A_c4.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.41806 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c5.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.49201 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c6.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.56657 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c7.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.64545 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c8.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.71990 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c9.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.79735 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c10.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.87067 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c11.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.94345 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c12.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.02001 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c13.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.09095 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "A_c14.cas"
+
+
+
+; -----------------------------------------------------------------------------
+
+
+file/read-case "Pipe.cas"
+
+
+; -----------------------------------------------------------------------------
+
+
+
+/define/periodic-conditions/massflow-rate-specification 0.12693 -521 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P1.cas"
+
+
+/define/periodic-conditions/massflow-rate-specification 0.19788 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P2.cas"
+
+
+/define/periodic-conditions/massflow-rate-specification 0.27016 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P3.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.34601 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+; /solve/initialize/initialize-flow ok ,
+solve/iterate 2000
+file/write-case-data "P4.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.41806 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P5.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.49201 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P6.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.56657 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P7.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.64545 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P8.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.71990 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P9.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.79735 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P10.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.87067 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P11.cas"
+
+/define/periodic-conditions/massflow-rate-specification 0.94345 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P12.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.02001 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P13.cas"
+
+/define/periodic-conditions/massflow-rate-specification 1.09095 , 0.5 2 1 0 0
+/solve/initialize/hyb-initialization ok ,
+solve/iterate 2000
+file/write-case-data "P14.cas"

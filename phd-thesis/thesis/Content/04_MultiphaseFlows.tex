@@ -1,0 +1,176 @@
+
+\begin{savequote}[50mm]
+Truth is much too complicated to allow anything but approximations.
+%\footnotemark[1]
+\qauthor{John von Neumann}
+\end{savequote}
+
+\chapter{Multiphase flow modeling}
+\label{cha:MPM}
+
+%\footnotetext[1]{In \textit{In Praise of Idleness and Other Essays} (1935).}
+%\setcounter{footnote}{1}
+
+This chapter presents the application of the LTS-Roe scheme to one-dimensional two-fluid model and the contribution to treatment of boundary conditions and source terms in LTS framework.
+
+\section{Mathematical modeling of two-phase flow}
+
+In the previous sections we studied single phase flow which can be completely described by the Navier--Stokes equations (for viscous flows) and the Euler equations (for inviscid flows). In particular, we focused on one-dimensional scalar conservation laws and the Euler equations.
+
+However, in practical applications most of the fluid flows are multiphase and/or multicomponent in their nature. In a world of unlimited computational resources, these flows could be modeled by applying the Navier--Stokes equation locally to the domain where a certain fluid is present, and by direct modeling of the interfaces between different phases. However, the present computing capabilities are not even close to that goal, and at the moment they do not seem to be achievable in any foreseen future:
+
+\noindent\begin{minipage}{\linewidth}
+\begin{quote}
+\small
+\textit{"For example, turbulence or three-dimensional hydrodynamics, those are problems that can eat up an arbitrary capacity on any computer we're ever likely to see. So you have to be clever."}
+\qauthor{Bernie Alder}
+\end{quote}
+\end{minipage}
+
+Being clever consists of using simplified models of the Navier--Stokes equations and/or by developing more accurate and more efficient numerical methods. There exist a great variety of simplified models for multiphase flow modeling, and they all boil down to finding the optimal balance between ensuring that the mathematical model possesses a capability to describe all the physics we are interested in, while at the same time keeping the model simple enough to be able to numerically solve it in a reasonable time. 
+
+One of the most commonly used simplifications is \textit{averaging}, where the flow parameters are averaged either over time, space or ensemble. A vast body of literature has been written on this topic, and we point out to books by Drew and Passman~\cite{dre99}, Ishii and Hibiki~\cite{ish11} and St\"{a}dtke~\cite{sta06} and literature therein for a comprehensive overview of the topic. Much of the progress in both mathematical and numerical modeling of multiphase flows was driven by demands of nuclear and petroleum industries, where notable softwares include CATHARE~\cite{bar90} and RELAP5~\cite{car90} for safety analysis of nuclear reactors, and LedaFlow~\cite{dan11}, OLGA~\cite{ben91}, PeTra~\cite{lar97} and TACITE~\cite{pau94} for oil \& gas industry. Herein, we do not study these models. 
+
+Instead, we focus on a very simple two-fluid model and use it to illustrate some of the major difficulties encountered in multiphase flow modeling.
+
+\subsection{Two-fluid model}
+
+We consider a one-dimensional isentropic equal-pressure two-fluid model without energy equation in which we solve separate evolution equations for mass and momentum of two fluids: 
+\begin{subequations} \label{eq:TFM}
+\begin{align} 
+\partial_t (\alpha_g \rho_g) + \partial_x (\alpha_g \rho_g v_g) & = 0, \label{zom1} \\
+\partial_t (\alpha_l \rho_l) + \partial_x (\alpha_l \rho_l v_l) & = 0, \\
+\partial_t (\alpha_g \rho_g v_g) + \partial_x (\alpha_g \rho_g v_g^2+(p-p^i)\alpha_g) + \alpha_g \partial_x p^i & = Q_g, \\
+\partial_t (\alpha_l \rho_l v_l) + \partial_x (\alpha_l \rho_v v_l^2+(p-p^i)\alpha_l) + \alpha_l \partial_x p^i & = Q_l, \label{zok2}
+\end{align}
+\end{subequations}
+where $ \rho, \alpha, v, Q $ are the density, volume fraction, velocity and the source term with corresponding phase indices $ g,l $ for the gas and liquid phase, respectively. The pressure $ p $ denotes a common pressure of both phases, while the pressure $ p^i $ denotes the pressure at the interface between gas and liquid. For more details and closure relations we refer to the paper by Evje and Fl\aa{}tten~\cite{evj03} from where this model was adopted.
+
+This and similar models have been studied by a number of authors~{\cite{tou96,cor98,cor02,evj03,vuy04,mun07} since it is one of the most simple two-fluid model that contains many of the difficulties that distinguish it from single phase hyperbolic systems such as the Euler equations.
+
+Systems of equations such as \eqref{eq:TFM} can be written as:
+\begin{equation} \label{eq:NCS}
+\mathbf{U}_t + \mathbf{F(U)}_x + \mathbf{B(U)} \mathbf{W(U)}_x = \mathbf{Q(U)},
+\end{equation}
+where $ \mathbf{U} $ is a vector of evolved variables, $ \mathbf{F(U)} $ is a flux function, $ \mathbf{B(U)} \mathbf{W(U)}_x $ represents non-conservative transport terms and $ \mathbf{Q(U)} $ is a vector of source terms. We may observe that already this very simple two-fluid model possesses two difficulties that were not present in the Euler equations:
+\begin{itemize}
+\item \textit{non-conservative terms:} The presence of non-conservative terms in this (and many other) two-fluid models presents a difficulty when it comes to the numerical modeling, because it is not possible to write the left-hand side of \eqref{eq:NCS} in conservation form. Hence, we cannot rely on the Lax-Wendroff theorem when considering convergence, and we do not possess a flux function that completely describes the evolution of the left-hand side, which prevents us from fully exploiting advantages of numerical methods based on the numerical viscosity form.
+
+This has been a long standing challenge both for mathematical theory and numerical modeling. The pioneering work on the mathematical theory of non-conservative products goes back to Vol'pert~\cite{vol67}, while notable papers include the works of Dal Maso et al.~\cite{dal95}, Hou and LeFloch~\cite{hou94}, Par\'{e}s~\cite{par06} and Castro et al.~\cite{cas08}. From the numerical modeling viewpoint, we mention the papers by Toumi and co-workers~\cite{tou92,tou96}, Castro and Toro~\cite{cas06}, Dumbser et al.~\cite{dum10}, Munkejord et al.~\cite{mun09} and Fl\aa{}tten and Morin~\cite{fla12}.
+
+We outline the approach we used to treat the non-conservative terms in~\cref{sec:MFM-numerics} where we discuss numerical modeling of \eqref{eq:NCS}.
+
+\item \textit{source terms:} In the system of equations \eqref{eq:TFM} the source terms appear only in the momentum equations modeling the effect of gravity. In more general case described by \eqref{eq:NCS} source terms may appear in all equations and they may account for a variety of physical phenomena. For example, in a two-phase flow modeling the source terms are used to model the \textit{relaxation processes} that account for transfer processes between two phases. These processes include transfer of heat, mass and volume due to differences in temperature, chemical potential and pressure, see Lund~\cite{lun13} for a comprehensive analysis of the relaxation models. Further modeling difficulties may appear if the source terms are \textit{stiff}, or if the system of equations is close to steady-state. The latter difficulties gave rise to a a class of \textit{well-balanced} schemes. We refer to LeVeque~\cite{lev02} and Bouchut~\cite{bou04} for an overview of these difficulties and further reading. 
+\end{itemize} 
+
+Herein, we wish to stress that these concepts (relaxation terms, stiff source terms, well-balanced schemes) are still an active area of research and there are numerous unresolved problems even for standard methods. Hence, we are still a long way from having an established theory how source terms should be treated in LTS methods. A pioneering work on this topic has been done by Morales-Hern\'{a}ndez, Murillo, Garc\'{\i}a-Navarro and co-workers~\cite{mur06,mor12a,mor12b,mor14,mor17} where they studied the source terms in the shallow water equations. 
+In addition to these two difficulties that can be immediately seen from \eqref{eq:NCS}, there are several other challenges that may appear in practical applications (for both single and multiphase flows):
+\begin{itemize}
+\item \textit{boundary conditions:} The treatment of boundary conditions is still a challenging topic and an active field of research even for standard numerical methods. Definition of boundary conditions in LTS methods is further complicated by the fact that we need to define additional ghost points at the boundaries. In addition, the presence of source terms leads to further difficulties due to a very delicate effect of the source terms at the boundaries of the domain when we use LTS methods. The question of boundary conditions in LTS methods has been addressed by LeVeque~\cite{lev88} and Morales-Hern\'{a}ndez and co-workers~\cite{mur06,mor12a,mor12b,mor14,mor17}. The treatment of boundary conditions in LTS methods is the topic of our conference and journal papers~\cite{cp1} and~\cite{jp1}, respectively. We outline how we approached these difficulties in \cref{sec:MFM-numerics}.
+
+\item \textit{positivity preservation:} In \cref{sec:PP} we studied difficulties related to positivity preservation in the Euler equations. The presence of two (or more) fluids and source terms, and their complex interaction poses an even greater challenge for the capability of method to preserve positivity, especially when we extend the method to LTS framework.
+
+\item \textit{stability of standard methods:} The CFL condition is only a necessary condition for stability of standard methods. Indeed, for most homogeneous one-dimensional systems of hyperbolic conservation laws, most standard schemes will be stable up to a Courant number of unity. However, in more complex flows it is very often the case that the actual upper bound of the Courant number is less than unity, and running a simulation requires us to use a lower Courant number than one might expect.
+
+Such difficulties were, for example, reported by Pelanti and Shyue~\cite{pel14} where the six-equation two-phase model was studied. Therein, these difficulties are attributed to the stiffness of the source terms. In practice, there is a variety of reasons why the actual CFL bound can be reduced. The difficulty for our interests is that if the nature of the model prevents even standard methods from reaching the standard Courant number, it remains an open question how we can apply LTS methods to such problems.
+\end{itemize}
+
+\begin{remark}
+\normalfont
+We note that chronologically, the content of \cref{cha:MPM} was the first thing done at the beginning of the PhD project. Unfortunately, the fact that the LTS-Roe scheme is not positivity preserving became a serious obstacle for more complicated models (this is not surprise, since the standard Roe scheme is not positivity preserving itself). The difficulty with positivity preservation was one of the main reasons that motivated us to study the HLL(C) schemes which are known to be positivity preserving. However, severe problems with positivity preservation of the LTS-HLL(C) schemes were observed for five-equation models of Allaire et al.~\cite{all02} and Murrone and Guillard~\cite{mur05}. We then opted to study the issues with the positivity preservation by using simpler models such as the Euler equations.
+\end{remark}
+
+\section{Numerical modeling of two-phase flow}
+\label{sec:MFM-numerics}
+
+Herein, we outline the approach we used to numerically solve the two-fluid model \eqref{eq:TFM}. For more general numerical methods for multiphase flow modeling we refer to the literature outlined in previous section.
+
+The system of equations \eqref{eq:NCS} can be written in quasilinear form as:
+\begin{equation} \label{eq:QL-TFM}
+\mathbf{U}_t + \mathbf{A(U)} \mathbf{U}_x = \mathbf{Q(U)},
+\end{equation}
+where:
+\begin{equation} \label{eq:NCT}
+\mathbf{A(U)} = \frac{\partial \mathbf{F(U)}}{\partial \mathbf{U}} + \mathbf{B(U)} \frac{\partial \mathbf{W(U)}}{\partial \mathbf{U}}.
+\end{equation}
+We then solve the system of equations \eqref{eq:QL-TFM} with the explicit Euler method in time and the LTS-Roe scheme in flux-difference splitting form in space:
+\begin{equation} \label{eq:TFM-FDS}
+\mathbf{U}_j^{n+1} = \mathbf{U}_j - \frac{\Delta t}{\Delta x} \sum\limits_{i=0}^{\infty} \left( \hat{\mathbf{A}}_{j-1/2-i}^{i+} \Delta \mathbf{U}_{j-1/2-i} + \hat{\mathbf{A}}_{j+1/2+i}^{i-} \Delta \mathbf{U}_{j+1/2+i} \right) + \Delta t \mathbf{Q(U)},
+\end{equation}
+where we left the source term $ \mathbf{Q(U)} $ undiscretized for now. We note that for this system, the treatment of the non-conservative term was straightforward, and its effect was simply incorporated into the coefficient matrix $ \mathbf{A} $, eq. \eqref{eq:NCT}, as it was done by Evje and Fl\aa{}tten~\cite{evj03}.
+
+The major findings of our papers~\cite{jp1,cp1} are related to treatment of boundary conditions and source terms with the method \eqref{eq:TFM-FDS}. Herein, we outline the main results on these.
+
+\subsection{Treatment of the boundary conditions}
+
+In standard methods the value of $ \mathbf{U}_j^{n+1} $ at the new time step depends only on the value at three cells in the previous time step:
+\begin{equation}
+\mathbf{U}_j^{n+1} = \mathbf{U} \left( \mathbf{U}_{j-1}^n, \mathbf{U}_j^n, \mathbf{U}_{j+1}^n \right).
+\end{equation}
+For the first cell in the domain, this implies that:
+\begin{equation}
+\mathbf{U}_1^{n+1} = \mathbf{U} \left( \mathbf{U}_{\text{LBC}}^n, \mathbf{U}_1^n, \mathbf{U}_{2}^n \right),
+\end{equation}
+where $ \mathbf{U}_{\text{LBC}} $ is the value of $ \mathbf{U} $ in the left boundary cell. Hence, the treatment of the boundaries in the standard methods requires us to define a single ghost cell at each boundary. In the LTS methods the value at the new time step depends on up to $ k $ cells at the previous time step:
+\begin{equation}
+\mathbf{U}_j^{n+1} = \mathbf{U} \left( \dots, \mathbf{U}_{j-2}^n, \mathbf{U}_{j-1}^n, \mathbf{U}_j^n, \mathbf{U}_{j+1}^n, \mathbf{U}_{j+2}^n, \dots \right),
+\end{equation}
+which implies that we may need to provide more than one ghost cell at the boundary:
+\begin{equation}
+\mathbf{U}_1^{n+1} = \mathbf{U} \left( \dots, \mathbf{U}_{-1}^n, \mathbf{U}_{\text{LBC}}^n, \mathbf{U}_1^n, \mathbf{U}_{2}^n, \mathbf{U}_{3}^n, \dots \right).
+\end{equation}
+We proposed two ways how to define these additional boundary cells:
+\begin{itemize}
+\item \textit{Extrapolated boundary conditions (EBC):} All additional boundary cells are equal to the original boundary cell:
+\begin{subequations} \label{eq:EBC}
+\begin{align}
+\mathbf{U}_j^n & = \mathbf{U}_{\text{LBC}}^n \quad \forall \quad j < \text{LBC}, \label{eq:EBCL} \\
+\mathbf{U}_j^n & = \mathbf{U}_{\text{RBC}}^n \quad \forall \quad j > \text{RBC}, \label{eq:EBCR}
+\end{align}
+\end{subequations}
+where the value of the the primary boundary cells at $ x_\text{LBC} $ and $ x_\text{RBC} $ may be defined in a number of ways, for example by extrapolation of the characteristic~\cite{fje02} or primitive variables. The difficulties observed with the LTS method are somewhat independent of the way we define $ \mathbf{U}_\text{LBC} $ and $ \mathbf{U}_\text{RBC} $, and in our papers~\cite{jp1,cp1} we used primitive variable extrapolation.
+\item \textit{Steady-state boundary conditions (SSBC):} We solve the steady-state version of \eqref{eq:QL-TFM} to obtain the slopes of the evolved variables $ \mathbf{U} $ due to the effect of the source term $ \mathbf{Q(U)} $:
+\begin{equation} \label{eq:system-SSBC}
+\mathbf{U}_x = \mathbf{A} (\mathbf{U})^{-1} \mathbf{Q} (\mathbf{U}).
+\end{equation}
+The discrete version of \eqref{eq:system-SSBC} allows us to determine the change of the evolved variables $ \mathbf{U} $ at the boundaries as:
+\begin{subequations}
+\begin{align}
+\delta_x \mathbf{U}_\text{L} & = \left( \mathbf{A} (\mathbf{U}_\text{LBC})\right)^{-1} \mathbf{Q} (\mathbf{U}_\text{LBC}), \\
+\delta_x \mathbf{U}_\text{R} & = \left( \mathbf{A} (\mathbf{U}_\text{RBC})\right)^{-1} \mathbf{Q} (\mathbf{U}_\text{RBC}).
+\end{align}
+\end{subequations}
+We then use these to replace \eqref{eq:EBC} by:
+\begin{subequations}
+\begin{align}
+\mathbf{U}_{j}^n & = \mathbf{U}_\text{LBC}^n + (j-\text{LBC}) \Delta x \delta_x \mathbf{U}_\text{L} \quad
+\forall \quad j\in[\text{LBC}-M,\ldots,\text{LBC}], \\
+\mathbf{U}_{j}^n & = \mathbf{U}_\text{RBC}^n + 
+(j-\text{RBC}) \Delta x \delta_x \mathbf{U}_\text{R}
+\quad \forall \quad j\in[\text{RBC},\ldots,\text{RBC}+M],
+\end{align}
+\end{subequations}
+where $ M = \lceil \bar{C} \rceil $.
+\end{itemize}
+SSBC led to an increase in accuracy, especially on coarser grids. However, SSBC requires additional computational work since one has to resolve the eigenstructure in newly defined cells. A more thorough analysis and comparison between solutions obtained with EBC ans SSBC can be found in our papers~\cite{jp1,cp1}.
+
+\subsection{Treatment of the source terms}
+
+We investigated two ways to treat the source term in \eqref{eq:TFM-FDS}:
+\begin{itemize}
+\item \textit{Explicit Euler treatment:} The source term is approximated directly as:
+\begin{equation} \label{eq:E-source}
+\Delta t \mathbf{Q(U)} = \Delta t \mathbf{Q}(\mathbf{U}_j).
+\end{equation}
+This approach gave acceptable results only if the LTS-Roe scheme was applied only on the acoustic waves. If the Courant number associated with the phase waves was increased above the standard CFL condition, severe oscillations appeared in the volume fraction and velocity profiles.
+
+\item \textit{Split treatment:} In this approach we followed the work by Morales-Hern\'{a}ndez and co-workers~\cite{mur06,mor12a,mor12b,mor14,mor17}, but generalized in slightly different direction more suitable for implementation in flux-difference splitting framework.
+
+The source term is approximated in an upwind manner, where the contributions from the source terms are evaluated at the interfaces:
+\begin{equation} \label{eq:S-source}
+\Delta t \mathbf{Q(U)} = \frac{\Delta t}{\Delta x} \sum\limits_{i=0}^{\infty} \left( \tilde{\mathbf{A}}_{j-1/2-i}^{i+} \mathbf{S}_{j-1/2-i} +
+\tilde{\mathbf{A}}_{j+1/2+i}^{i-} \mathbf{S}_{j+1/2+i} \right),
+\end{equation}
+where for the definition of $ \tilde{\mathbf{A}} $ and $ \mathbf{S} $ we refer to our paper~\cite{jp1}. This approach resulted in notable improvement of accuracy compared to the simpler approach \eqref{eq:E-source} and allowed us to use the Courant number up to $ \bar{C} \approx 2.4 $ for phase waves. However, it did not yield an unconditionally stable scheme, and further increase of the Courant number gave rise to oscillations. In addition, split treatment is clearly more computationally expensive than the explicit Euler treatment.
+\end{itemize}
+ 

@@ -1,0 +1,23 @@
+
+
+
+/views/restore-view isometric
+
+/display/set-window 4
+/display/set/contour/surface center(1)
+/display/set/contour/surface xy-plane(2)
+/display/set/contour/surface periodic(3)
+; /display/set/contours/n-contour 30
+; /display/set/contours/global-range n
+; /display/set/contours/clip-to-range y
+; /display/set/contours/filled-contours y
+/display/contour solid vof , ,
+/solve/animate/define/define-monitor "solid-volfrac" 4 n y 1 contour hmf ,
+
+
+
+; /solve/animate/define/define-monitor "liquid-vel" 5 y y 1 contour hmf ,
+; /display/contour liquid velocity , ,
+
+; /solve/animate/define/define-monitor "solid-vel" 6 y y 1 contour hmf ,
+; /display/contour solid velocity , ,

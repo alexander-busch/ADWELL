@@ -1,0 +1,56 @@
+; --------------------------------------------------------------------------------------------
+; Initialize case
+; --------------------------------------------------------------------------------------------
+; /file/read-journal initialize.jou
+
+/file/read-case case.cas OK
+/define/user-defined/compiled-functions load "libudf"
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Initialization
+; --------------------------------------------------------------------------------------------
+
+/solve/initialize/set-defaults/fluid x-velocity 0
+/solve/initialize/set-defaults/fluid y-velocity 0
+/solve/initialize/set-defaults/solid x-velocity 0
+/solve/initialize/set-defaults/solid y-velocity 0
+/solve/initialize/set-defaults/solid mp 0
+/solve/initialize/set-defaults/solid granular-temperature 0
+
+/solve/initialize/initialize-flow ,
+
+
+; --------------------------------------------------------------------------------------------
+; Patch solids
+; --------------------------------------------------------------------------------------------
+
+/adapt/mark-inout-rectangle/ y n -0.01 0.01 0 0.02
+; /adapt/mark-inout-rectangle/ y n -0.01 0.01 0 0.0252
+; /adapt/mark-inout-rectangle/ y n -0.03 -0.01 0 0.04
+
+
+
+; use 0.42 and height = 0.03 as a very loose packing alternative
+; use 0.5 and height = 0.0252 as a very loose packing alternative
+/solve/patch solid , , , mp 0.625
+;/solve/patch solid , , , granular-temperature 1e-4
+
+/display/set/contours/auto-range? n
+/display/set/contours/filled-contours? y
+/display/set/contours/surfaces ()
+/display/contour solid vof , (%rpgetvar 'alpha_pack)
+
+/define/user-defined/compiled-functions unload "libudf"
+/file/write-case-data "case_init.cas" OK
+
+
+/adapt/set/min-number-cells 100
+/adapt/set/max-number-cells 10000
+/adapt/set/min-cell-volume 1e-7
+/adapt/set/max-level-refine 4
+/adapt/set/coarsen-mesh? y
+/adapt/set/refine-mesh? y
+/adapt/adapt-to-gradients/solid/vof space-gradient 2 n 0.7 0.3 y 5

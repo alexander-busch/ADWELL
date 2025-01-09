@@ -1,0 +1,61 @@
+; --------------------------------------------------------------------------------------------
+; Compile UDF
+; --------------------------------------------------------------------------------------------
+
+; /file/read-journal compile.jou
+
+; --------------------------------------------------------------------------------------------
+; Initial compilation of UDF in Fluent
+; --------------------------------------------------------------------------------------------
+
+; Define UDM
+; /define/user-defined/user-defined-memory 1
+
+
+
+; Compile
+;/define/user-defined/compiled-functions unload "libudf"
+!if exist libudf rmdir /s /q libudf
+!if exist "udf/UDFs.c" copy /y udf\UDFs.c
+/define/user-defined/compiled-functions compile "libudf" y "UDFs.c" , ,
+;"functions.c" "utilities.c" , "GranularDenseFlowCorrection.h" ,
+!if exist UDFs.c del /q UDFs.c
+
+
+
+; Load library and hook UDFs
+/define/user-defined/compiled-functions load "libudf" 
+; /define/boundary-conditions/fluid mixture sand y 0 1 n y "sol_x_mom_src::libudf" 1 n y "sol_y_mom_src::libudf" 1 n y "sol_gran_temp_src::libudf" n n 0 n 0 n n
+; /define/user-defined/function-hooks/adjust "freeze::libudf" ,
+
+; --------------------------------------------------------------------------------------------
+; Visual Studio
+; --------------------------------------------------------------------------------------------
+
+; Modify makefile in order to debug with VS - SERIAL
+!if exist "libudf\win64\2ddp\makefile" bat\jrepl "CFLAGS = /c /Za" "CFLAGS = /c /Od /Zi" /f libudf\win64\2ddp\makefile /o -
+!if exist "libudf\win64\2ddp\makefile" bat\jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\2ddp\makefile /o -
+
+; Modify makefile in order to debug with VS - PARALLEL
+!if exist "libudf\win64\2ddp_host\makefile" bat\jrepl "CFLAGS = /c /Za /DUDF_EXPORTING /DUDF_NT" "CFLAGS = /c /Od /Zi /DUDF_EXPORTING /DUDF_NT" /f libudf\win64\2ddp_host\makefile /o -
+!if exist "libudf\win64\2ddp_host\makefile" bat\jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\2ddp_host\makefile /o -
+!if exist "libudf\win64\2ddp_node\makefile" bat\jrepl "CFLAGS = /c /Za /DUDF_EXPORTING /DUDF_NT" "CFLAGS = /c /Od /Zi /DUDF_EXPORTING /DUDF_NT" /f libudf\win64\2ddp_node\makefile /o -
+!if exist "libudf\win64\2ddp_node\makefile" bat\jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\2ddp_node\makefile /o -
+
+; Open source file in VS 
+; Open multiple files in one VS instance https://stackoverflow.com/questions/14601859/how-to-open-files-in-one-instance-using-visual-studio
+!if exist "libudf/src/UDFs.c" "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" /edit "libudf/src/UDFs.c"&
+; "libudf/src/UDFs.c" "libudf/src/functions.c"  "libudf/src/GranularDenseFlowCorrection.h"&
+
+; Recompile using VS via Fluent, different compile commands for serial/parallel in .bat file 
+/define/user-defined/compiled-functions unload "libudf"
+(system "cmd /c bat\recompile.bat")
+!if exist "libudf/src/GranularDenseFlowCorrection.h" copy /y libudf\src\GranularDenseFlowCorrection.h udf\GranularDenseFlowCorrection.h
+!if exist "libudf/src/utilities.c" copy /y libudf\src\utilities.c udf\utilities.c
+!if exist "libudf/src/functions.c" copy /y libudf\src\functions.c udf\functions.c 
+!if exist "libudf/src/UDFs.c" copy /y libudf\src\UDFs.c udf\UDFs.c
+/define/user-defined/compiled-functions load "libudf"
+
+; Attach instance of VS to process using CTRL+ALT+P
+
+

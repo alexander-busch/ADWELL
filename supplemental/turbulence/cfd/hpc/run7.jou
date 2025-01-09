@@ -1,0 +1,62 @@
+; --------------------------------------------------------------------------------------------
+; Pressure gradient or rpm sweep of turbulent pipe/annular flow
+; --------------------------------------------------------------------------------------------
+
+; 02.10.2018, alexander.busch@alumni.ntnu.no
+
+; Reads generic case and sweeps pressure gradient or rpm
+; Attention: Change absolute path in rename command to suit working directory 
+; Copy journal file in Fluent working directory and paste "file/read-journal run7.jou" to run simulations for defined pressure gradients/mass flow rates
+
+
+; --------------------------------------------------------------------------------------------
+; Read case and change color scheme
+; --------------------------------------------------------------------------------------------
+
+/file/read-case case.cas
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+; --------------------------------------------------------------------------------------------
+; Purge working directory
+; --------------------------------------------------------------------------------------------
+
+!if exist solution rmdir /s /q solution
+!mkdir solution
+!mkdir "solution/reports"
+!mkdir "solution/exports"
+!mkdir "solution/monitors"
+!mkdir "solution/autosave"
+!mkdir "solution/cfd-post"
+
+
+; --------------------------------------------------------------------------------------------
+; Parameters
+; --------------------------------------------------------------------------------------------
+
+(rpsetvar 'newt/eta/scaled 0.000125)
+/define/materials/change-create newt-scaled newt-scaled y constant (%rpgetvar 'newt/rho/scaled) n n y constant (%rpgetvar 'newt/eta/scaled) n n n
+
+
+; --------------------------------------------------------------------------------------------
+; Solve - Scaled newt material function
+; --------------------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y newt-scaled , , , , , , , , , , , , , , , , , , , ,
+
+/define/periodic-conditions/pressure-gradient-specification -0.01656 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "solution/monitors/a_newt-scaled_dpdx=0.01656_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "solution/monitors/a_newt-scaled_dpdx=0.01656_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.6324
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/file/write-case-data "case_init.cas"
+/solve/iterate 20000
+/file/export/ascii "solution/exports/a_newt-scaled_dpdx=0.01656.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "solution/reports/a_newt-scaled_dpdx=0.01656.txt"
+/file/write-case-data "solution/a_newt-scaled_dpdx=0.01656.cas"
+

@@ -1,0 +1,322 @@
+; /file/write-case "E:\OneDrive_NTNU\SWwd\FLUENT\AdWell\Particle trajectories\2017 - AB\mesh\2D_1mm.cas"
+
+;/define/user-defined/compiled-functions unload "libudf"
+
+
+; --------------------------------------------------------------------------------------------
+; Working directory clean up
+; --------------------------------------------------------------------------------------------
+!if exist libudf rmdir /s /q libudf
+
+
+; --------------------------------------------------------------------------------------------
+; Load mesh & Mesh operations
+; --------------------------------------------------------------------------------------------
+
+/file/read-case mesh/2D_1mm_A.msh OK
+
+
+;/mesh/size-info
+;/mesh/quality
+
+/surface/group-surfaces interior interior-interior__faces__ , fluid
+
+/define/boundary-conditions/modify-zones/merge-zones interior interior-interior__faces__ ,
+/define/boundary-conditions/modify-zones/zone-name interior__faces__ fluid
+
+
+; Refine mesh at trajectory section 
+/adapt/mark-inout-rectangle y n 0.247 0.523 -0.015 0.02
+; /adapt/set/refine-mesh n
+; /adapt/set/coarsen-mesh y
+/adapt/adapt-to-register , 0 0 y
+
+; --------------------------------------------------------------------------------------------
+; Surfaces
+; --------------------------------------------------------------------------------------------
+/surface/line-surface line_xy 0.285 -0.005 0.285 0.020
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Definitions
+; ----------	----------------------------------------------------------------------------------
+
+; Bulk flow rate
+(if (not (rp-var-object 'u_bulk))	(rp-var-define 'u_bulk 0.048 'real #f))
+
+; Slip velocity
+(if (not (rp-var-object 'u_slip))	(rp-var-define 'u_slip 0.002 'real #f))
+
+; Channel height
+(if (not (rp-var-object 'h_channel))	(rp-var-define 'h_channel 0.02 'real #f))
+
+; Fluid
+(if (not (rp-var-object 'rho_f))	(rp-var-define 'rho_f 998.2 'real #f))
+(if (not (rp-var-object 'fluid))	(rp-var-define 'fluid 3 'integer #f))
+(rpgetvar 'fluid)
+(rpsetvar 'fluid 3)
+
+; Shear rate model
+(if (not (rp-var-object 'model))	(rp-var-define 'model 1 'integer #f))
+
+
+; --------------------------------------------------------------------------------------------
+; Rheology model coefficients
+; --------------------------------------------------------------------------------------------
+
+; PAC2 - Cross
+; (if (not (rp-var-object 'pac_cross_lambda))	(rp-var-define 'pac_cross_lambda 0.0109 'real #f))
+; (if (not (rp-var-object 'pac_cross_n))		(rp-var-define 'pac_cross_n 0.586 'real #f))
+; (if (not (rp-var-object 'pac_cross_mu0))		(rp-var-define 'pac_cross_mu0 0.0721 'real #f))
+
+; PAC4 - Cross
+(if (not (rp-var-object 'pac_cross_lambda))	(rp-var-define 'pac_cross_lambda 0.0261 'real #f))
+(if (not (rp-var-object 'pac_cross_n))		(rp-var-define 'pac_cross_n 0.608 'real #f))
+(if (not (rp-var-object 'pac_cross_mu0))	(rp-var-define 'pac_cross_mu0 0.214 'real #f))
+
+
+; --------------------------------------------------------------------------------------------
+; Particle properties^
+; --------------------------------------------------------------------------------------------
+
+(if (not (rp-var-object 'd_p))		(rp-var-define 'd_p 0.002 'real #f))
+(if (not (rp-var-object 'rho_p))	(rp-var-define 'rho_p 2560.0 'real #f))
+
+
+; --------------------------------------------------------------------------------------------
+; UDF
+; --------------------------------------------------------------------------------------------
+
+; Define UDM
+
+; Compile
+/define/user-defined/compiled-functions compile "libudf" y "exp_velocity_profile.c" "parabolic_velocity_profile.c" "particle_drag_force.c" "showgrad.c" "cross_rheology.c", "ParticleTrajectory.h" ,
+
+
+; Load library and hook UDFs
+/define/user-defined/compiled-functions load "libudf"
+
+; Modify makefile in order to debug with VS - SERIAL
+!if exist "libudf\win64\2ddp\makefile" jrepl "CFLAGS = /c /Za /DUDF_EXPORTING /DUDF_NT" "CFLAGS = /c /Od /Zi /DUDF_EXPORTING /DUDF_NT" /f libudf\win64\2ddp\makefile /o -
+!if exist "libudf\win64\2ddp\makefile" jrepl "/dll   /out" "/dll  /debug /out" /f libudf\win64\2ddp\makefile /o -
+
+; Open source file in VS 
+; Open multiple files in one VS instance https://stackoverflow.com/questions/14601859/how-to-open-files-in-one-instance-using-visual-studio
+!if exist "libudf/src/particle_drag_force.c" "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" /edit "libudf/src/particle_drag_force.c" "libudf/src/exp_velocity_profile.c" "libudf/src/parabolic_velocity_profile.c" "libudf/src/cross_rheology.c"&
+
+; Recompile using VS via Fluent, different compile commands for serial/parallel in .bat file 
+/define/user-defined/compiled-functions unload "libudf"
+(system "cmd /c recompile.bat")
+!if exist "libudf/src/particle_drag_force.c" copy /y libudf\src\particle_drag_force.c
+!if exist "libudf/src/exp_velocity_profile.c" copy /y libudf\src\exp_velocity_profile.c
+!if exist "libudf/src/exp_velocity_profile.c" copy /y libudf\src\parabolic_velocity_profile.c
+!if exist "libudf/src/cross_rheology.c" copy /y libudf\src\parabolic_velocity_profile.c
+/define/user-defined/compiled-functions load "libudf"
+
+
+; Attach instance of VS to process using CTRL+ALT+P
+
+
+; --------------------------------------------------------------------------------------------
+; General
+; --------------------------------------------------------------------------------------------
+
+/define/operating-conditions/gravity y 0 -9.81
+; /define/operating-conditions/reference-pressure-location 0.4 0.04
+
+; Set operating density and reference density such that pressure field includes hydrostatic term http://www.eureka.im/1261.html
+; define/operating-conditions/operating-density? y 0
+
+; Reference values
+
+/report/reference-values/area 0.00084
+/report/reference-values/density (rpgetvar 'rho_f)
+/report/reference-values/depth 1
+/report/reference-values/enthalpy 0
+/report/reference-values/length 1
+/report/reference-values/pressure 0
+/report/reference-values/temperature 294.15
+/report/reference-values/velocity 1
+/report/reference-values/viscosity 0.001002
+
+
+;/define/models/unsteady-1nd-order y
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Models
+; --------------------------------------------------------------------------------------------
+
+; Continous phase
+/define/models/viscous laminar y
+; /define/models/viscous/multiphase-turbulence/turbulence-multiphase-models 2
+; /define/models/viscous/turbulence-expert/turb-non-newtonian y
+
+
+
+; Dispersed phase
+/define/models/dpm/interaction/coupled-calculations y
+/define/models/dpm/interaction/update-dpm-sources-every-flow-iteration y
+/define/models/dpm/interaction/no.-of-cont-phase-iters-per-dpm-iter 1
+
+/define/models/dpm/options/track-in-absolute-frame y
+
+/define/models/dpm/interaction/linearized-dpm-source-terms y
+
+; /define/models/dpm/unsteady-tracking y
+
+; /define/models/dpm/options/saffman lift force y
+
+/define/models/dpm/injections/create-injection injection n n n n n n n 0.255 0.02 0 0 (%rpgetvar 'd_p) 0.0094
+; Particle type [inert]: Change current value? [no]
+; Injection type [single]: Change current value? [no]
+; Injection Material [anthracite]: Change current value? [no]
+; Stochastic Tracking? [no]
+; Modify Laws? [no]
+; Set user defined initialization function? [no]
+; Cloud Tracking? [no]
+; X-Position (m) [0]
+; Y-Position (m) [0]
+; X-Velocity (m/s) [0]
+; Y-Velocity (m/s) [0]
+; Diameter (m) [1e-06]
+; Flow Rate (kg/s) [1e-20]
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters "particle_drag_force::libudf"
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Materials
+; --------------------------------------------------------------------------------------------
+
+; H2O
+/define/materials/copy fluid water
+/define/materials/change-create water h2o y constant (rpgetvar 'rho_f) n n y constant 0.001002 n n n y
+
+; PAC Generic
+; /define/materials/change-create h2o pac-cross n n n y cross shear-rate-dependent (%rpgetvar 'pac_cross_mu0) (%rpgetvar 'pac_cross_n) (%rpgetvar 'pac_cross_lambda) n n n n
+/define/materials/change-create h2o pac-cross n n n y user-defined "cross_rheology::libudf" n n n
+
+; PAC2
+; /define/materials/change-create h2o pac2-pl n n n y non-newtonian-power-law shear-rate-dependent 0.082 0.78 0 0 n n n n
+; /define/materials/change-create h2o pac2-cross n n n y cross shear-rate-dependent (%rpgetvar 'pac2_cross_mu0) (%rpgetvar 'pac2_cross_n) (%rpgetvar 'pac2_cross_lambda) n n n n
+
+; PAC4
+; /define/materials/change-create h2o pac4-pl n n n y non-newtonian-power-law shear-rate-dependent 0.256 0.71 0 0 n n n n
+; /define/materials/change-create h2o pac4-cross n n n y cross shear-rate-dependent (%rpgetvar 'pac4_cross_mu0) (%rpgetvar 'pac4_cross_n) (%rpgetvar 'pac4_cross_lambda) n n n n
+
+
+; Particles
+/define/materials/change-create anthracite glassbeads y constant (%rpgetvar 'rho_p) n y 
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; BC
+; --------------------------------------------------------------------------------------------
+
+
+
+; Fluid zone
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , ,
+/define/materials/delete air
+
+; Inlet
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "exp_velocity_profile::libudf" q
+; /define/boundary-conditions/set/velocity-inlet inlet , vmag n (%rpgetvar 'u_bulk) q
+
+; Wall
+/define/boundary-conditions/set/wall wall_top () dpm-bc-type y reflect q
+/define/boundary-conditions/set/wall wall_bottom_slip () dpm-bc-type y trap q
+/define/boundary-conditions/set/wall wall_bottom_noslip () dpm-bc-type y trap q
+
+/define/boundary-conditions/set/wall wall_top wall_bottom_slip , motion-bc y motion-bc-moving q
+/define/boundary-conditions/set/wall wall_top wall_bottom_slip , relative? n q
+/define/boundary-conditions/set/wall wall_top wall_bottom_slip , vmag n (%rpgetvar 'u_slip) q
+
+
+; --------------------------------------------------------------------------------------------
+; Monitors
+; --------------------------------------------------------------------------------------------
+
+; Residuals
+/solve/monitors/residual/print y
+/solve/monitors/residual/plot y
+/solve/monitors/residual/window 1
+/solve/monitors/residual/convergence-criteria 1e-5 1e-5 1e-5
+
+
+; --------------------------------------------------------------------------------------------
+; Initialization
+; --------------------------------------------------------------------------------------------
+
+; Set default values in entire domain
+;/solve/initialize/set-defaults/fluid x-velocity 0
+;/solve/initialize/set-defaults/fluid y-velocity 0
+;/solve/initialize/set-defaults/fluid k 1
+;/solve/initialize/set-defaults/fluid omega 1
+;/solve/initialize/set-defaults/solid x-velocity 0
+;/solve/initialize/set-defaults/solid y-velocity 0
+;/solve/initialize/set-defaults/solid k 1
+;/solve/initialize/set-defaults/solid omega 1
+;/solve/initialize/set-defaults/solid mp 0
+;/solve/initialize/set-defaults/solid granular-temperature 0.0001
+
+/solve/initialize/initialize-flow y
+;/solve/initialize/hyb-initialization OK
+
+
+
+; --------------------------------------------------------------------------------------------
+; Solve
+; --------------------------------------------------------------------------------------------
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Post
+; --------------------------------------------------------------------------------------------
+
+/display/set-window 2
+
+; Change color scheme
+display/set/colors/color-scheme classic
+display/set/colors/background "white"
+display/set/colors/foreground "black"
+display/re-render
+
+; Define image output
+/views/restore-view front
+/display/set/picture/driver png
+/display/set/picture landscape yes
+/display/set/picture/x-resolution 4000
+/display/set/picture/y-resolution 1000
+; /views/camera/display/set/windows/aspect-ratio 11 8.5
+/views/camera/position 0.030 0.01 0.5 
+/views/camera/target 0.030 0.01 -1
+/views/camera/zoom-camera 8
+/views/camera/up-vector 0 1 0
+/display/set/windows/ruler y
+/display/set/windows/scale/visible y
+/display/set/contours/filled-contours no
+/views/save-view xy OK
+
+
+
+
+; --------------------------------------------------------------------------------------------
+; Save case
+; --------------------------------------------------------------------------------------------
+
+/file/write-case-data "case_2D_A.cas" OK
+
+;/file/read-journal ParticleTrajectory_RunAllCases_2D.jou

@@ -1,0 +1,163 @@
+; --------------------------------------------------------------------------------------------
+; Pressure gradient sweep of turbulent pipe flow
+; --------------------------------------------------------------------------------------------
+
+; 17.05.208, alexander.busch@alumni.ntnu.no
+
+; Reads generic case and sweeps pressure gradient
+; Attention: Change absolute path in rename command to suit working directory 
+; Paste "file/read-journal RUN_PressureGradientSweep.jou" to run simulations for defined pressure gradients
+
+
+; --------------------------------------------------------------------------------------------
+; Read case and change color scheme
+; --------------------------------------------------------------------------------------------
+
+/file/read-case-data annulus.cas OK
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+
+; --------------------------------------------------------------------------------------------
+; Purge working directory
+; --------------------------------------------------------------------------------------------
+
+!if exist reports rmdir /s /q reports
+!mkdir reports
+!if exist exports rmdir /s /q exports
+!mkdir exports
+!if exist monitors rmdir /s /q monitors
+!mkdir monitors
+!if exist solved rmdir /s /q solved
+!mkdir solved
+
+
+; --------------------------------------------------------------------------------------------
+; Solve - Scaled pl material function
+; --------------------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pl-scaled , , , , , , , , , , , , , , , , , , , ,
+
+/define/periodic-conditions/pressure-gradient-specification -0.001 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.001_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.001_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 0.25553
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.001.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.001.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.001.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.0025 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.0025_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.0025_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 0.43135
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.0025.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.0025.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.0025.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.005 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.005_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.005_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 0.64099
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.005.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.005.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.005.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.01 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.01_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.01_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 0.95251
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.01.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.01.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.01.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.013 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.013_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.013_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.1066
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.013.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.013.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.013.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.01447 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.01447_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.01447_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.1764
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.01447.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.01447.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.01447.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.018 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.018_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.018_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.3327
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.018.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.018.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.018.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.02 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.02_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.02_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.4154
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.02.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.02.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.02.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.03 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.03_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.03_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 1.7845
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.03.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.03.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.03.cas"
+
+/define/periodic-conditions/pressure-gradient-specification -0.04 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 2 y y "monitors/a_pl-scaled_dpdl=0.04_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/a_pl-scaled_dpdl=0.04_bulk-velocity.txt" 1
+/solve/initialize/set-defaults/x-velocity 2.1033
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/omega 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/a_pl-scaled_dpdl=0.04.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate specific-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/a_pl-scaled_dpdl=0.04.txt"
+/file/write-case-data "solved/a_pl-scaled_dpdl=0.04.cas"
+

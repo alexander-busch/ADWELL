@@ -1,0 +1,12 @@
+# Session file stopped:  2018/05/08 13:21:46
+
+# Session file started:  2018/05/08 09:12:15
+# CFX-17.2 build 2016.07.19-00.09-136427
+
+# To avoid unnecessary file pre-processing and modifications, include
+# COMMAND FILE at the top of your session file.
+# If it is not included, the file is assumed to be older and will be
+# modified for backward compatibility.
+COMMAND FILE:
+  CFX Post Version = 17.2
+END

@@ -1,0 +1,9 @@
+; /file/read-journal recompile.jou
+
+/define/user-defined/compiled-functions unload "libudf"
+(system "cmd /c recompile.bat")
+!if exist "libudf/src/GranularDenseFlowCorrection.h" copy /y libudf\src\GranularDenseFlowCorrection.h
+!if exist "libudf/src/utilities.c" copy /y libudf\src\utilities.c
+!if exist "libudf/src/functions.c" copy /y libudf\src\functions.c
+!if exist "libudf/src/UDFs.c" copy /y libudf\src\UDFs.c
+/define/user-defined/compiled-functions load "libudf"

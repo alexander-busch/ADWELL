@@ -1,0 +1,128 @@
+; --------------------------------------------------------------------------------------------
+; Run file for hpc
+; --------------------------------------------------------------------------------------------
+
+; /file/read-journal run.jou
+
+/file/read-case-data case_init.cas OK
+
+; /file/read-case-data case_init_sidewall.cas OK
+; /define/operating-conditions/gravity y 0 -9.81
+
+
+; --------------------------------------------------------------------------------------------
+; Granular flow model
+; --------------------------------------------------------------------------------------------
+
+; Set to 0.69 for Jackson & Johnson
+(rpsetvar 'alpha_pack 0.63)
+
+/define/user-defined/compiled-functions load "libudf" 
+
+; Granular temperature formulation = ODE
+/define/phases/phase-domain solid , n y n y n constant (%rpgetvar 'd_s) syamlal-obrien lun-et-al schaeffer constant (%rpgetvar 'angle_intfric) based-ktgf derived constant (%rpgetvar 'alpha_fric) syamlal-obrien lun-et-al lun-et-al derived constant (%rpgetvar 'alpha_pack)
+; domain id/name [solid] solid
+; material-name [solid]: Change current value? [no] n
+; Granular
+; Packed Bed
+; Granular Temperature Model: Use Partial Differential Equation?
+; Interfacial Area Concentration
+; Diameter: (constant user-defined)
+; Granular Viscosity: (constant syamlal-obrien gidaspow user-defined)
+; Granular Bulk Viscosity: (constant lun-et-al user-defined)
+; Frictional Viscosity: (none constant schaeffer johnson-et-al user-defined) user-defined "viscosity_fric::libudf"
+; Angle of Internal Friction: (constant user-defined)
+; Frictional Pressure (none johnson-et-al syamlal-et-al based-ktgf user-defined) user-defined "pressure_fric::libudf"
+; Frictional Modulus: (derived user-defined)
+; Friction Packing Limit: (constant user-defined)
+; Granular Conductivity: (constant syamlal-obrien gidaspow user-defined)
+; Solids Pressure: (lun-et-al syamlal-obrien ma-ahmadi user-defined none)
+; Radial Distribution: (lun-et-al syamlal-obrien ma-ahmadi arastoopour user-defined) user-defined "rad_distr_func::libudf"
+; Elasticity Modulus: (derived user-defined)
+; Packing Limit: (constant user-defined)
+
+
+; Interaction coefficients
+/define/phases/interaction-domain n n y gidaspow n n n 0 n n n 
+; Virtual Mass Modeling [no] n
+; Virtual Mass Coefficient : Change current values? [no] n
+; Drag Coefficient : Change current values? [no] y
+; methods: (schiller-naumann morsi-alexander symmetric universal-drag grace tomiyama user-defined none wen-yu gidaspow syamlal-obrien syamlal-obrien-para huilin-gidaspow gibilaro)
+; Drag Modification? [no] n
+; Lift Coefficient : Change current values? [no] n
+; Restitution Coefficient : Change current values? [no] n
+; Number of Mass Transfer Mechanisms [0] n
+; Surface Tension Force Modeling [no] 
+; Surface Tension Coefficients (n/m) : Change current values? [no] 
+; Interfacial Area : Change current values? [no] 
+
+; FLOW3D source term model settings
+; /define/user-defined/user-defined-memory 1
+; /define/boundary-conditions/fluid mixture solid y 0 1 n y sol_x_mom_src::libudf 1 n y sol_y_mom_src::libudf 0 , , , , , , ,
+; /define/user-defined/function-hooks/adjust "freeze::libudf" ,
+; /define/boundary-conditions/fluid mixture solid y 0 0 0 1 n y "sol_gran_temp_src::libudf" n n 0 n 0 n n
+
+
+; Laux (1997) settings
+; (rpsetvar 'angle_intfric 55)
+; (rpsetvar 'alpha_fric 0.40)
+; (rpsetvar 'alpha_pack 0.63)
+; /define/phases/phase-domain solid , n y n y n constant (%rpgetvar 'd_s) syamlal-obrien lun-et-al schaeffer constant (%rpgetvar 'angle_intfric) based-ktgf derived constant (%rpgetvar 'alpha_fric) syamlal-obrien lun-et-al lun-et-al derived constant (%rpgetvar 'alpha_pack)
+; /define/user-defined/function-hooks/adjust "limit_GT::libudf" ,
+
+; --------------------------------------------------------------------------------------------
+; Autosave
+; --------------------------------------------------------------------------------------------
+
+!if exist autosave rmdir /s /q autosave
+!mkdir autosave
+
+/file/auto-save/data-frequency 10
+/file/auto-save/append-file-name-with time-step 6
+/file/auto-save/root-name "autosave/case"
+
+
+; --------------------------------------------------------------------------------------------
+; CFD post data export
+; --------------------------------------------------------------------------------------------
+
+!if exist cfd-post rmdir /s /q cfd-post
+!mkdir cfd-post
+
+/file/export/cfd-post-compatible cfd-post/case-0.000000 , , solid-vof fluid-velocity-magnitude solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-granular-pressure solid-frictional-viscosity solid-granular-temperature solid-dynamic-pressure solid-viscosity-lam solid-total-pressure q y ,
+/file/transient-export/delete cfd-post
+/file/transient-export/cfd-post-compatible cfd-post/case , , solid-vof fluid-velocity-magnitude solid-velocity-magnitude solid-x-velocity solid-y-velocity solid-granular-pressure solid-frictional-viscosity solid-granular-temperature solid-dynamic-pressure solid-viscosity-lam solid-total-pressure q , n cfd-post 1 flow-time 6
+
+; --------------------------------------------------------------------------------------------
+; Display results during computations
+; --------------------------------------------------------------------------------------------
+
+/solve/execute-commands/add-edit command-1 1 "time-step" "/display/set-window 2"
+/solve/execute-commands/add-edit command-2 1 "time-step" "/display/contour solid vof , ,"
+
+/solve/execute-commands/add-edit command-3 1 "time-step" "/display/set/contours/filled-contours n"
+/solve/execute-commands/add-edit command-4 1 "time-step" "/display/re-render"
+/solve/execute-commands/add-edit command-5 1 "time-step" "/display/set/overlays y"
+/solve/execute-commands/add-edit command-6 1 "time-step" "/display/vector solid velocity solid velocity-magnitude , , , ,"
+
+
+
+/display/set-window 2
+/display/contour solid vof , ,
+
+/display/set/contours/filled-contours n
+/display/re-render
+/display/set/overlays y
+/display/vector solid velocity solid velocity-magnitude , , , ,
+
+
+
+; --------------------------------------------------------------------------------------------
+; Solve
+; --------------------------------------------------------------------------------------------
+
+solve/set/time-step 1e-3
+solve/dual-time-iterate 300 40
+
+/file/write-case-data case_solved.cas OK
+

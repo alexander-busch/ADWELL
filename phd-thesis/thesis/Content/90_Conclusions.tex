@@ -1,0 +1,46 @@
+\label{cha:Conclusions}
+
+\section{Conclusions}
+
+We developed and investigated Large Time Step HLL-type finite volume methods for hyperbolic conservation laws. Our major contributions are presented in \cref{cha:LTS-HLL,cha:MPM} and they can be summarized as follows:
+\begin{itemize}
+\item \Cref{sec:LTS-HLL(C)}: We developed the LTS-HLL-type schemes.
+
+\item \Cref{sec:EV-ME}: We investigated entropy stability of LTS methods by using the modified equation analysis.
+
+\item \Cref{sec:PP}: We investigated monotonicity and positivity preservation of LTS methods. 
+
+\item \Cref{cha:MPM}: We investigated the treatment of boundary conditions and source terms in LTS methods.
+
+\end{itemize}
+
+In \cref{sec:LTS-HLL(C)} we interpreted the HLL scheme as a numerical scheme for scalar conservation laws. We developed a two-parameter HLL-type schemes, and determined the TVD conditions on the wave velocity estimates. We showed that the HLLE scheme is consistent, TVD and entropy stable, i.e. it converges to the entropy solution. We then developed the LTS-HLL-type schemes. We described these new schemes in the numerical viscosity, flux-difference splitting and wave propagation form, and we determined the TVD conditions on the wave velocity estimates. We showed that the LTS-HLLE scheme is consistent and TVD. However, a rigorous proof of entropy stability remains unresolved. 
+
+This new class of schemes provided greater flexibility in constructing new schemes because it has two free parameters, while at the same time it allows us to simply deduce LTS extensions of standard one-parameter methods, such as the Roe, Lax-Friedrichs, Rusanov, Godunov and Engquist-Osher schemes. Working along the lines of the approach above, we extended the standard HLL and HLLC schemes for systems of conservation laws to the LTS-HLL(C) schemes. 
+
+In \cref{sec:EV-ME} we investigated the question of entropy stability by using the modified equation analysis. First, we used the modified equation to quantify the amount of numerical diffusion in the LTS-HLL-type schemes. We performed numerical experiments to gain better insight into how entropy violations happen in LTS methods, and to conjecture how are they avoided in certain LTS-HLL-type schemes. In particular, we conjecture that the LTS-HLLE and LTS-Rusanov schemes are entropy stable. Numerical results for both scalar conservation laws and the Euler equations are in agreement with theoretical results obtained with the modified equation analysis.
+
+In \cref{sec:PP} we investigated questions of monotonicity and positivity preservation. First, we determined the monotonicity conditions on the numerical flux function of an LTS method, and we showed that the LTS-Lax-Friedrichs scheme is monotone. Then, we moved to systems of equations and showed that the positivity preserving conditions in LTS methods are stronger than in standard methods. For some special cases of initial data, we described how loss of positivity preserving occurs in the LTS-HLLE scheme, we showed that the LTS-Lax-Friedrichs scheme is positivity preserving, and we numerical demonstrated that robustness of the LTS-HLLE scheme can be increased by adding numerical diffusion.
+
+Lastly, in \cref{cha:MPM} we applied the LTS-Roe scheme to a one-dimensional two-fluid model and focused on the difficulties related to the boundary conditions and the source terms. We proposed a new way to define the boundary conditions in the LTS framework, and we handled the source terms by following Morales-Hern\'{a}ndez and co-workers~\cite{mur06,mor12a,mor12b,mor14,mor17}. It is shown that the accuracy of the solution can be greatly improved by appropriate treatment of boundary conditions and source terms. 
+
+\section{Future outlook}
+
+Large Time Step methods have been around for more than thirty years, but they never really became a part of the mainstream in the finite volume methods/hyperbolic conservation laws community. Nevertheless, there seems to be an unfailing appeal in their increased stability and explicitness, and it seems that throughout their history there was always someone trying to exploit their full potential. 
+
+I am not convinced that my humble contributions will change this trend. But in case time proves me wrong, and for those who will be interested in further exploring LTS methods I will consider some possible directions and possibilities.
+
+\begin{itemize}
+\item \textit{Numerical diffusion:} The majority of the numerical investigations performed by us and other authors suggest that most errors in LTS methods appear in form of oscillations around shocks and contact discontinuities. These errors can be reduced by introducing numerical diffusion, as it was successfully done by Lindqvist et al.~\cite{lin16}, Solberg~\cite{sol16} and Nygaard~\cite{nyg17}. Therein, the amount of the numerical diffusion being added is partially automated and partially tuned manually. We showed that manually adding numerical diffusion increases the robustness of LTS methods. Any LTS method aiming for generality and robustness will need to have a sophisticated and fully automatized mechanism to add numerical diffusion. 
+
+One idea on how to do this might be along the lines of how higher order TVD methods are designed: use second-order scheme where the data is smooth, and reduce it to a first-order schemes around discontinuities. We believe that is possible to construct an LTS method which will automatically introduce appropriate amount of numerical diffusion around discontinuities or when loss of positivity is likely to happen.
+
+\item \textit{Computational efficiency and convergence rates:} Even though the computational efficiency is one of the most attractive features of LTS methods, it was not the main objective of our investigations. However, any strong argument in favor of LTS methods must be supported by evidence of increased computational efficiency. 
+
+Our preliminary investigations suggest that the decrease in computational time is greatest immediately after going from $ \bar{C}=1 \, \rightarrow \, \bar{C}=2 $. A further increase in Courant number yielded smaller and smaller gains in computational time (see for instance our papers~\cite{jp1,jp2,cp1}). This suggests that in terms of computational time, it might be optimal to use a relatively small Courant number. A better criterion for choosing the Courant number would be computational efficiency, which was also investigated in our papers~\cite{jp1,jp2}. Therein, computational efficiency and convergence rates are studied, and it is observed that LTS methods generally have higher convergence rates than their first-order counterparts. We note that our numerical codes were build to be simple and modular, and we believe that by optimizing the code we could further improve the gains in computational time and computational efficiency.
+
+Since a significant increase in Courant number leads to oscillations and inevitable decrease in accuracy, it might not be fruitful to push the Courant number above a single digit numbers. Another attractive feature of keeping the Courant number relatively low is that it might result in increased computational efficiency while applying the LTS method only on acoustic waves, which brings us to the next point.
+
+\item \textit{Low Mach number flows:} LTS methods might be an attractive candidate for low Mach number flows, where it would be possible to use very high Courant numbers for the acoustic waves, and standard methods for the slow waves. We obtained some preliminary results in this direction in our paper~\cite{jp1}, where we considered the water faucet test case. Therein, slow waves are not strongly affected by acoustic waves and it was possible to use an LTS method for the acoustic waves in a straightforward way, which led to a notable decrease in computational time and increase in accuracy of slow waves. 
+
+\end{itemize}

@@ -1,0 +1,6 @@
+/define/materials/change-create pac1-pl pac1-pl n n n y non-newtonian-power-law shear-rate-dependent 0.018495 0.87107 0 0 n n n
+/define/materials/change-create pac1-cross pac1-cross n n n y cross shear-rate-dependent 0.017186 0.6333 0.0028552 n n n
+/define/materials/change-create pac2-pl pac2-pl n n n y non-newtonian-power-law shear-rate-dependent 0.060667 0.79705 0 0 n n n
+/define/materials/change-create pac2-cross pac2-cross n n n y cross shear-rate-dependent 0.059634 0.58038 0.021649 n n n
+/define/materials/change-create pac4-pl pac4-pl n n n y non-newtonian-power-law shear-rate-dependent 0.16524 0.7692 0 0 n n n
+/define/materials/change-create pac4-cross pac4-cross n n n y cross shear-rate-dependent 0.22571 0.55775 0.083929 n n n

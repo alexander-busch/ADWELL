@@ -1,0 +1,1487 @@
+
+; --------------------------------------------------------------------------------------------
+; B - Working directory clean up & load case
+; --------------------------------------------------------------------------------------------
+!if exist archive\case_2D_B rmdir /s /q archive\case_2D_B
+
+!if exist cases rmdir /s /q cases
+!mkdir cases
+!if exist cases_solved rmdir /s /q cases_solved
+!mkdir cases_solved
+!if exist exports rmdir /s /q exports
+!mkdir exports
+!if exist images rmdir /s /q images
+!mkdir images
+!if exist DPM_x.txt del DPM_x.txt
+!if exist DPM_y.txt del DPM_y.txt
+!if exist DPM_rep.txt del DPM_rep.txt
+
+/file/read-case-data "case_2D_B.cas" OK
+/define/user-defined/compiled-functions load "libudf"
+
+/solve/monitors/residual/convergence-criteria 1e-5 1e-5 1e-5
+
+(rpsetvar 'model/sr_p 1)
+(rpsetvar 'model/sr 1)
+(rpsetvar 'model/rheology "Cross")
+(rpsetvar 'model/drag "SN")
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_H2O_d_p=0.00116_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 1)
+(rpsetvar 'cross/lambda 0.0)
+(rpsetvar 'cross/n 1.0)
+(rpsetvar 'cross/mu_0 0.001002)
+(rpsetvar 'cross/mu_inf 0.001002)
+(rpsetvar 'carreau/lambda 0.0)
+(rpsetvar 'carreau/n 1.0)
+(rpsetvar 'carreau/mu_0 0.001002)
+(rpsetvar 'carreau/mu_inf 0.001002)
+/define/boundary-conditions fluid , y h2o , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00116)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0059471 -0.1368171 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.02182)
+(rpsetvar 'u_slip_bottom (* 1.1 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/H2O-cross_U0.085_d_p0.00116_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.00116_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/H2O-cross_U0.085_d_p0.00116_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/H2O-cross_U0.085_d_p0.00116_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\H2O-cross_U0.085_d_p0.00116_asis_x.txt
+!move /y DPM_y.txt exports\H2O-cross_U0.085_d_p0.00116_asis_y.txt
+!move /y DPM_rep.txt exports\H2O-cross_U0.085_d_p0.00116_asis_rep.txt
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.00116_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_H2O_d_p=0.002_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 1)
+(rpsetvar 'cross/lambda 0.0)
+(rpsetvar 'cross/n 1.0)
+(rpsetvar 'cross/mu_0 0.001002)
+(rpsetvar 'cross/mu_inf 0.001002)
+(rpsetvar 'carreau/lambda 0.0)
+(rpsetvar 'carreau/n 1.0)
+(rpsetvar 'carreau/mu_0 0.001002)
+(rpsetvar 'carreau/mu_inf 0.001002)
+/define/boundary-conditions fluid , y h2o , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.3072687 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.02182)
+(rpsetvar 'u_slip_bottom (* 1.1 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/H2O-cross_U0.085_d_p0.002_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.002_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/H2O-cross_U0.085_d_p0.002_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/H2O-cross_U0.085_d_p0.002_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\H2O-cross_U0.085_d_p0.002_asis_x.txt
+!move /y DPM_y.txt exports\H2O-cross_U0.085_d_p0.002_asis_y.txt
+!move /y DPM_rep.txt exports\H2O-cross_U0.085_d_p0.002_asis_rep.txt
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.002_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC2_d_p=0.002_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 2)
+(rpsetvar 'cross/lambda 0.01090)
+(rpsetvar 'cross/n 0.58641)
+(rpsetvar 'cross/mu_0 0.07212)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.14004)
+(rpsetvar 'carreau/n 0.72100)
+(rpsetvar 'carreau/mu_0 0.06881)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0274644 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00203)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC2-cross_U0.048_d_p0.002_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.002_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC2-cross_U0.048_d_p0.002_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC2-cross_U0.048_d_p0.002_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC2-cross_U0.048_d_p0.002_asis_x.txt
+!move /y DPM_y.txt exports\PAC2-cross_U0.048_d_p0.002_asis_y.txt
+!move /y DPM_rep.txt exports\PAC2-cross_U0.048_d_p0.002_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.002_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC2_d_p=0.003_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 2)
+(rpsetvar 'cross/lambda 0.01090)
+(rpsetvar 'cross/n 0.58641)
+(rpsetvar 'cross/mu_0 0.07212)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.14004)
+(rpsetvar 'carreau/n 0.72100)
+(rpsetvar 'carreau/mu_0 0.06881)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0575385 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00203)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC2-cross_U0.048_d_p0.003_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.003_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC2-cross_U0.048_d_p0.003_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC2-cross_U0.048_d_p0.003_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC2-cross_U0.048_d_p0.003_asis_x.txt
+!move /y DPM_y.txt exports\PAC2-cross_U0.048_d_p0.003_asis_y.txt
+!move /y DPM_rep.txt exports\PAC2-cross_U0.048_d_p0.003_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.003_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC4_d_p=0.002_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0104402 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00501)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.048_d_p0.002_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.002_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.048_d_p0.002_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.048_d_p0.002_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.048_d_p0.002_asis_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.048_d_p0.002_asis_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.048_d_p0.002_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.002_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC4_d_p=0.002_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0455298 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00887)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.085_d_p0.002_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.002_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.085_d_p0.002_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.085_d_p0.002_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.085_d_p0.002_asis_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.085_d_p0.002_asis_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.085_d_p0.002_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.002_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC4_d_p=0.003_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0156603 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00501)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.048_d_p0.003_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.003_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.048_d_p0.003_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.048_d_p0.003_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.048_d_p0.003_asis_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.048_d_p0.003_asis_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.048_d_p0.003_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.003_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_asis_PAC4_d_p=0.003_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_n::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0569123 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00887)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.085_d_p0.003_asis.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.003_asis.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.085_d_p0.003_asis.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.085_d_p0.003_asis_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.085_d_p0.003_asis_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.085_d_p0.003_asis_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.085_d_p0.003_asis_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.003_asis.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_H2O_d_p=0.00116_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 1)
+(rpsetvar 'cross/lambda 0.0)
+(rpsetvar 'cross/n 1.0)
+(rpsetvar 'cross/mu_0 0.001002)
+(rpsetvar 'cross/mu_inf 0.001002)
+(rpsetvar 'carreau/lambda 0.0)
+(rpsetvar 'carreau/n 1.0)
+(rpsetvar 'carreau/mu_0 0.001002)
+(rpsetvar 'carreau/mu_inf 0.001002)
+/define/boundary-conditions fluid , y h2o , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00116)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0059471 -0.1368171 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.02182)
+(rpsetvar 'u_slip_bottom (* 1.1 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/H2O-cross_U0.085_d_p0.00116_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.00116_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/H2O-cross_U0.085_d_p0.00116_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/H2O-cross_U0.085_d_p0.00116_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\H2O-cross_U0.085_d_p0.00116_new_x.txt
+!move /y DPM_y.txt exports\H2O-cross_U0.085_d_p0.00116_new_y.txt
+!move /y DPM_rep.txt exports\H2O-cross_U0.085_d_p0.00116_new_rep.txt
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.00116_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_H2O_d_p=0.002_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 1)
+(rpsetvar 'cross/lambda 0.0)
+(rpsetvar 'cross/n 1.0)
+(rpsetvar 'cross/mu_0 0.001002)
+(rpsetvar 'cross/mu_inf 0.001002)
+(rpsetvar 'carreau/lambda 0.0)
+(rpsetvar 'carreau/n 1.0)
+(rpsetvar 'carreau/mu_0 0.001002)
+(rpsetvar 'carreau/mu_inf 0.001002)
+/define/boundary-conditions fluid , y h2o , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.3072687 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.02182)
+(rpsetvar 'u_slip_bottom (* 1.1 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/H2O-cross_U0.085_d_p0.002_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.002_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/H2O-cross_U0.085_d_p0.002_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/H2O-cross_U0.085_d_p0.002_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\H2O-cross_U0.085_d_p0.002_new_x.txt
+!move /y DPM_y.txt exports\H2O-cross_U0.085_d_p0.002_new_y.txt
+!move /y DPM_rep.txt exports\H2O-cross_U0.085_d_p0.002_new_rep.txt
+
+/file/write-case-data "cases_solved/H2O-cross_U0.085_d_p0.002_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC2_d_p=0.002_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 2)
+(rpsetvar 'cross/lambda 0.01090)
+(rpsetvar 'cross/n 0.58641)
+(rpsetvar 'cross/mu_0 0.07212)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.14004)
+(rpsetvar 'carreau/n 0.72100)
+(rpsetvar 'carreau/mu_0 0.06881)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0274644 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00203)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC2-cross_U0.048_d_p0.002_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.002_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC2-cross_U0.048_d_p0.002_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC2-cross_U0.048_d_p0.002_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC2-cross_U0.048_d_p0.002_new_x.txt
+!move /y DPM_y.txt exports\PAC2-cross_U0.048_d_p0.002_new_y.txt
+!move /y DPM_rep.txt exports\PAC2-cross_U0.048_d_p0.002_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.002_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC2_d_p=0.003_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 2)
+(rpsetvar 'cross/lambda 0.01090)
+(rpsetvar 'cross/n 0.58641)
+(rpsetvar 'cross/mu_0 0.07212)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.14004)
+(rpsetvar 'carreau/n 0.72100)
+(rpsetvar 'carreau/mu_0 0.06881)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0575385 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00203)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC2-cross_U0.048_d_p0.003_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.003_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC2-cross_U0.048_d_p0.003_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC2-cross_U0.048_d_p0.003_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC2-cross_U0.048_d_p0.003_new_x.txt
+!move /y DPM_y.txt exports\PAC2-cross_U0.048_d_p0.003_new_y.txt
+!move /y DPM_rep.txt exports\PAC2-cross_U0.048_d_p0.003_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC2-cross_U0.048_d_p0.003_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC4_d_p=0.002_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0104402 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00501)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.048_d_p0.002_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.002_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.048_d_p0.002_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.048_d_p0.002_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.048_d_p0.002_new_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.048_d_p0.002_new_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.048_d_p0.002_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.002_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC4_d_p=0.002_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00200)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0455298 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00887)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.085_d_p0.002_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.002_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.085_d_p0.002_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.085_d_p0.002_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.085_d_p0.002_new_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.085_d_p0.002_new_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.085_d_p0.002_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.002_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC4_d_p=0.003_U=0.048
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0156603 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0480)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00501)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.048_d_p0.003_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.003_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.048_d_p0.003_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.048_d_p0.003_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.048_d_p0.003_new_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.048_d_p0.003_new_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.048_d_p0.003_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.048_d_p0.003_new.cas" OK
+
+
+; --------------------------------------------------------------------------------------------
+; Problem=B_Version=_new_PAC4_d_p=0.003_U=0.085
+; --------------------------------------------------------------------------------------------
+
+/define/models/dpm/injections/properties/set/pick-injections-to-set n injection , n
+/define/models/dpm/injections/properties/set/physical-models/drag-parameters drag_force_st::libudf
+
+/define/models/viscous/laminar y
+(rpsetvar 'fluid 3)
+(rpsetvar 'cross/lambda 0.02611)
+(rpsetvar 'cross/n 0.60825)
+(rpsetvar 'cross/mu_0 0.21355)
+(rpsetvar 'cross/mu_inf 0.00102)
+(rpsetvar 'carreau/lambda 0.25275)
+(rpsetvar 'carreau/n 0.68614)
+(rpsetvar 'carreau/mu_0 0.19891)
+(rpsetvar 'carreau/mu_inf 0.00102)
+/define/materials/change-create pac-cross pac-cross n n n y user-defined "rheology_cross::libudf" n n n
+/define/boundary-conditions fluid , y pac-cross , , , , , , , , , , ,
+
+(rpsetvar 'd_p 0.00300)
+
+/define/models/dpm/injections/set-injection-properties injection , n n n n n n n 0.008 0.019999999 0.0000000 -0.0569123 (%rpgetvar 'd_p) 0.0094
+
+(rpsetvar 'u_bulk 0.0850)
+/define/boundary-conditions/set/velocity-inlet inlet , vmag y y "udf" "par_vel_pro::libudf" q
+(rpsetvar 'u_slip_top 0.00887)
+(rpsetvar 'u_slip_bottom (* 5.5 (%rpgetvar 'u_slip_top)))
+
+/define/boundary-conditions/set/wall wall_top () vmag n 0.0 q
+
+/define/boundary-conditions/set/wall wall_bottom_slip () vmag n 0.0 q
+
+/solve/initialize/initialize-flow y
+/file/write-case-data "cases/PAC4-cross_U0.085_d_p0.003_new.cas" OK
+
+/solve/iterate 600
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.003_new.cas" OK
+
+/display/set-window 2
+/views/restore-view xy
+/display/contour/velocity-magnitude , ,
+/display/set/overlays y
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+/display/particle-tracks particle-tracks particle-reynolds-number , , , ,
+
+/display/save-picture "images/PAC4-cross_U0.085_d_p0.003_new.png" OK
+
+/display/set-window 3
+plot/plot y "exports/PAC4-cross_U0.085_d_p0.003_new_vx_xy.txt" n y 0 1 n n x-velocity line_xy ,
+
+
+; Particle trajectory exports
+; These are conducted via GUI as this yields better data quality, see xlsx file in /trials
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-set-list-tree-selections "NavigationPane*List_Tree1" (list "Results|Graphics|Particle Tracks"))
+(cx-gui-do cx-activate-item "NavigationPane*List_Tree1")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #f)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton4(XY Plot)")
+(cx-gui-do cx-set-toggle-button2 "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)" #t)
+(cx-gui-do cx-activate-item "Particle Tracks*Table1*Frame1*Frame1*ToggleBox1(Options)*CheckButton5(Write to File)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 3))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList4(X Axis Function)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '())
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*List5(Release from Injections)" '( 0))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*List5(Release from Injections)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_x.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 4))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_y.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-set-list-selections "Particle Tracks*Frame2*Table1*DropDownList2" '( 22))
+(cx-gui-do cx-activate-item "Particle Tracks*Frame2*Table1*DropDownList2")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton1(OK)")
+(cx-gui-do cx-set-file-dialog-entries "Select File" '( "DPM_rep.txt") "Particle Tracks Files (*.xy)")
+(cx-gui-do cx-activate-item "Particle Tracks*PanelButtons*PushButton2(Cancel)")
+
+!move /y DPM_x.txt exports\PAC4-cross_U0.085_d_p0.003_new_x.txt
+!move /y DPM_y.txt exports\PAC4-cross_U0.085_d_p0.003_new_y.txt
+!move /y DPM_rep.txt exports\PAC4-cross_U0.085_d_p0.003_new_rep.txt
+
+/file/write-case-data "cases_solved/PAC4-cross_U0.085_d_p0.003_new.cas" OK
+
+!mkdir archive\case_2D_B
+!move /y cases archive\case_2D_B\cases
+!move /y cases_solved archive\case_2D_B\cases_solved
+!move /y exports archive\case_2D_B\exports
+!move /y images archive\case_2D_B\images
+!robocopy /e libudf archive\case_2D_B\cases\libudf
+!robocopy /e libudf archive\case_2D_B\cases_solved\libudf

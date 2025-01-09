@@ -1,0 +1,103 @@
+#!/bin/bash
+#####################################################################################################
+#
+# Fluent array job script
+# 
+# All file names must end with numbers starting from 0 to n, where n is the total number of individual cases in the job array (casenumber)
+# The script calculates processor numbers for each fluent (parallel) job.
+# Be careful with file names if your Fluent simulations are generating .dat or export e.g. .txt files. They are all gonna be in the same folder.
+# n Log files ending with the casenumber will be produced.
+# After submitting the job one may check its status with qstat -u -t <your user>
+#
+#####################################################################################################
+
+#PBS -N cliffcol_h2o
+####Job name
+
+#PBS -A nn9575k
+#### Account alexabus on vilje.hpc.ntnu.no
+#### ntnu643
+#### nn9575k
+
+#PBS -J 1-9
+#### Specify number of array jobs
+
+#PBS -l walltime=60:00:00
+#### Estimate of elapsed time in hours:min:sec
+
+#PBS -l select=1:ncpus=32:mpiprocs=16
+#### select=x amount of nodes, ncpus=32 amount of cpus, mpiprocs=16 amount of MPI processes per node
+#### Only change select=x and mpiprocs=y where in general y = 16*x (ncpus=32 remains unchanged)
+#### Reduction of the number of MPI processes on each node, if processes need more memory
+
+#PBS -l Fluent=16
+#### "Fluent=x" ensures that there are x Fluent licenses available when the job starts.
+#### In general: Licenses = (Number of licenses) = (number of cores) - 16
+#### However, in case of a single node job one should still require 16 licenses to be available.
+
+#PBS -m bea
+### E-mail alert, mail begin, end, abort messages
+
+#PBS -M alexander.busch@ntnu.no
+#### Emailadress
+
+#PBS -o output.out
+### standard output stream
+
+#PBS -e error.err
+### standard error stream
+
+# Load Fluent R16.2.0 or R17.2
+module load fluent/17.2
+
+# Define number of cases in job array
+#casenumber=8
+
+# Get casename
+case=$PBS_JOBNAME
+
+# Change to directory from which the job was submitted as execution always begins in home directory
+cd $PBS_O_WORKDIR
+
+# Create variable w for directory of respective jobarray case on /work/
+w=/work/$PBS_O_LOGNAME/$case/$PBS_ARRAY_INDEX
+
+# Purge legacy data and create the working directory
+[ -e output.out ] && rm output.out
+[ -e error.err ] && rm error.err
+if [ -d $w ]; then rm -rf $w; fi
+if [ ! -d $w ]; then mkdir -p $w; fi
+
+# Copy inputfiles and move to working directory
+cp case_1.cas $w
+cp case_2.cas $w
+cp case_3.cas $w
+#cp case_1_2patch.cas $w
+#cp case_2_2patch.cas $w
+#cp case_3_2patch.cas $w
+cp journalfiles/run$PBS_ARRAY_INDEX.jou $w
+cp patchfiles/patch_$PBS_ARRAY_INDEX.ip $w
+cp run_jobarray.pbs $w
+#cp -a $h $w
+cd $w 
+
+# Total CPU number = select x mpiprocs (NTNU hpc default)
+#procs=`cat $PBS_NODEFILE | wc -l`
+
+# CPU number for array job (Tufan example)
+# Calculates CPU number for each Fluent simulation procs = totprocs/casenumber and each Fluent simulation runs as -t$procs. If you want to run all jobs in serial just delete this part.
+#procs=`echo "$totprocs/$casenumber" | bc`
+
+# CPU number for array job (Manual setting)
+procs=2
+
+# Run Fluent with journal file
+# 3ddp 3D and double
+# -i
+# fluent.jou Fluent journal file to use
+# -p probably parallel
+# -t$procs number of processors to make use of
+# -gu allows to write images, -g is the normal setting
+# -ssh
+# -cnf=$PBS_NODEFILE > FluentLog.txt writes FLuent log in textfile
+fluent 2ddp -gu -p -t$procs -ssh -cnf=$PBS_NODEFILE -i run$PBS_ARRAY_INDEX.jou > FluentLog$PBS_ARRAY_INDEX.txt

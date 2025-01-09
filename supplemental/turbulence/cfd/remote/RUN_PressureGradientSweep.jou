@@ -1,0 +1,233 @@
+; --------------------------------------------------------------------------------------------
+; Pressure gradient sweep of turbulent pipe/annular flow
+; --------------------------------------------------------------------------------------------
+
+; 14.06.2018, alexander.busch@alumni.ntnu.no
+
+; Reads generic case and sweeps pressure gradient
+; Attention: Change absolute path in rename command to suit working directory 
+; Paste "file/read-journal RUN_PressureGradientSweep.jou" to run simulations for defined pressure gradients
+
+
+; --------------------------------------------------------------------------------------------
+; Read case and change color scheme
+; --------------------------------------------------------------------------------------------
+
+/file/read-case-data pipe.cas OK
+/display/set/colors/color-scheme classic
+/display/set/colors/background "white"
+/display/set/colors/foreground "black"
+/display/re-render
+
+
+
+; --------------------------------------------------------------------------------------------
+; Purge working directory
+; --------------------------------------------------------------------------------------------
+
+!if exist reports rmdir /s /q reports
+!mkdir reports
+!if exist exports rmdir /s /q exports
+!mkdir exports
+!if exist monitors rmdir /s /q monitors
+!mkdir monitors
+!if exist solved rmdir /s /q solved
+!mkdir solved
+
+
+; --------------------------------------------------------------------------------------------
+; Solve - Scaled pl material function
+; --------------------------------------------------------------------------------------------
+
+/define/boundary-conditions/fluid fluid y pl-scaled , , , , , , , , , , , , , , , , , , , ,
+
+/define/periodic-conditions/massflow-rate-specification 0.13297 -0.001 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.13297_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.13297_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.1693
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.13297.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.13297.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.13297.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.13297_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.22447 -0.0025 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.22447_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.22447_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.2858
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.22447.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.22447.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.22447.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.22447_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.33355 -0.005 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.33355_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.33355_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.4247
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.33355.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.33355.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.33355.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.33355_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.49566 -0.01 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.49566_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.49566_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.63109
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.49566.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.49566.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.49566.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.49566_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.57583 -0.013 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.57583_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.57583_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.73317
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.57583.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.57583.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.57583.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.57583_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.61218 -0.01447 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.61218_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.61218_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.77945
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.61218.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.61218.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.61218.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.61218_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.69351 -0.018 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.69351_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.69351_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.88301
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.69351.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.69351.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.69351.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.69351_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.73655 -0.02 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.73655_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.73655_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 0.9378
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.73655.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.73655.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.73655.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.73655_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 0.92859 -0.03 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.92859_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=0.92859_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 1.1823
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=0.92859.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=0.92859.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=0.92859.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=0.92859_dpdx.txt"
+
+/define/periodic-conditions/massflow-rate-specification 1.0945 -0.04 0.5 5 1 0 0
+/solve/monitors/surface/set-monitor mass-flow-rate "Mass Flow Rate" plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=1.0945_mass-flow-rate.txt" 1
+/solve/monitors/surface/set-monitor bulk-velocity "Area-Weighted Average" x-velocity plane_yz () y 3 y y "monitors/p_pl-scaled_mdot=1.0945_bulk-velocity.txt" 1
+/solve/monitors/statistic/monitors y
+/solve/monitors/statistic/print y
+/solve/monitors/statistic/plot y
+/solve/monitors/statistic/write y
+/solve/monitors/statistic/window 4
+/solve/initialize/set-defaults/x-velocity 1.3936
+/solve/initialize/set-defaults/k 1
+/solve/initialize/set-defaults/epsilon 1 
+/solve/initialize/initialize-flow ok ,
+/solve/iterate 20000
+/file/export/ascii "exports/p_pl-scaled_mdot=1.0945.txt" line_xy () , velocity-magnitude x-velocity y-velocity viscosity-turb turb-kinetic-energy turb-diss-rate turb-reynolds-number-rey production-of-k y-plus () ,
+/report/summary y "reports/p_pl-scaled_mdot=1.0945.txt"
+/file/write-case-data "solved/p_pl-scaled_mdot=1.0945.cas"
+!move /y statistics-per-pr-grad.out monitors\statistics-per-pr-grad.out
+!rename C:\Users\alexabus\OneDrive_NTNU\SWwd\FLUENT\AdWell\Turbulence\remote\monitors\statistics-per-pr-grad.out "p_pl-scaled_mdot=1.0945_dpdx.txt"
+
